@@ -1,0 +1,374 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Auth & Users ────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  image     String?
+  password  String? // bcrypt hash (null for OAuth-only users)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  emails   UserEmail[]
+  accounts Account[]
+  sessions Session[]
+  author   Author?
+}
+
+model UserEmail {
+  id        String   @id @default(cuid())
+  userId    String
+  email     String   @unique
+  isPrimary Boolean  @default(false)
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ─── Authors & Subscriptions ─────────────────────────────
+
+model Author {
+  id               String           @id @default(cuid())
+  userId           String           @unique
+  slug             String           @unique
+  displayName      String
+  bio              String?
+  avatarUrl        String?
+  stripeAccountId  String?          @unique
+  subscriptionTier SubscriptionTier @default(FREE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  books            Book[]
+  emailSubscribers EmailSubscriber[]
+  crossPromotions  CrossPromotion[]
+}
+
+enum SubscriptionTier {
+  FREE
+  STARTER
+  PRO
+  ENTERPRISE
+}
+
+// ─── Books & Content ─────────────────────────────────────
+
+model Book {
+  id                String     @id @default(cuid())
+  authorId          String
+  title             String
+  subtitle          String?
+  description       String?
+  coverImageUrl     String?
+  slug              String
+  price             Int        @default(0) // in cents (legacy, prefer BookFormat.price)
+  currency          String     @default("USD")
+  isbn              String?
+  epubFileUrl       String?
+  samplePercent     Int        @default(10)
+  status            BookStatus @default(DRAFT)
+  luluProjectId     String?
+  luluPrintReady    Boolean    @default(false)
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  // Wizard tracking
+  wizardStep        Int        @default(1)
+
+  // File management
+  manuscriptFileUrl  String?
+  manuscriptFileType String?   // pdf, docx, epub
+  coverFileUrl       String?   // S3 URL for original cover upload
+
+  // Metadata
+  keywords          String[]
+  bisacCodes        String[]
+
+  // Launch
+  launchDate        DateTime?
+  preOrderDate      DateTime?
+  isPreOrder        Boolean    @default(false)
+
+  author          Author          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  orders          Order[]
+  categories      BookCategory[]
+  crossPromotions CrossPromotion[]
+  formats         BookFormat[]
+  sections        BookSection[]
+  readerAccess    ReaderAccess[]
+  giftLinks       GiftLink[]
+
+  @@unique([authorId, slug])
+}
+
+enum BookStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model BookFormat {
+  id       String     @id @default(cuid())
+  bookId   String
+  type     FormatType
+  price    Int        // in cents
+  currency String     @default("USD")
+  isActive Boolean    @default(true)
+
+  // Print specs (null for ebook)
+  trimSize     String? // e.g. "6x9"
+  paperType    String? // cream, white, bright_white
+  bindingType  String? // perfect_bound, hardcover_casewrap, etc.
+  interiorColor String? // bw, color
+  printQuality String? // standard, premium
+  coverFinish  String? // glossy, matte
+  pageCount    Int?
+
+  isbn             String? // ISBN specific to this format
+  luluPodPackageId String? // 27-char Lulu SKU
+
+  // Per-format files
+  interiorFileUrl String? // may differ from book's manuscript
+  coverFileUrl    String? // format-specific cover (diff spine widths)
+
+  // Lulu cost data (cached from API)
+  printingCostCents     Int?
+  shippingEstimateCents Int?
+
+  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  orders    Order[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([bookId, type])
+}
+
+enum FormatType {
+  HARDCOVER
+  PAPERBACK
+  EBOOK
+  LEAF_EDITION
+}
+
+model BookCategory {
+  id     String @id @default(cuid())
+  bookId String
+  name   String
+
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([bookId, name])
+}
+
+// ─── Orders & Payments ───────────────────────────────────
+
+model Order {
+  id              String      @id @default(cuid())
+  bookId          String
+  bookFormatId    String?
+  buyerEmail      String
+  buyerName       String?
+  amount          Int         // in cents
+  platformFee     Int         // in cents
+  currency        String      @default("USD")
+  stripePaymentId String?     @unique
+  status          OrderStatus @default(PENDING)
+  format          OrderFormat // legacy field
+  luluOrderId     String?
+  shippingAddress Json?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  book       Book        @relation(fields: [bookId], references: [id])
+  bookFormat BookFormat? @relation(fields: [bookFormatId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FULFILLED
+  REFUNDED
+  FAILED
+}
+
+enum OrderFormat {
+  EBOOK
+  PRINT
+  BUNDLE
+}
+
+// ─── Email Collection ────────────────────────────────────
+
+model EmailSubscriber {
+  id        String   @id @default(cuid())
+  authorId  String
+  email     String
+  name      String?
+  source    String?  // e.g. "reader_share", "book_page", "author_page", "purchase"
+  createdAt DateTime @default(now())
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@unique([authorId, email])
+}
+
+// ─── Cross-Promotion ─────────────────────────────────────
+
+model CrossPromotion {
+  id            String   @id @default(cuid())
+  authorId      String
+  bookId        String
+  partnerBookId String?
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  book   Book   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+}
+
+// ─── Leaf Reader ────────────────────────────────────────
+
+model BookSection {
+  id          String   @id @default(cuid())
+  bookId      String
+  order       Int
+  slug        String
+  heading     String
+  htmlContent String
+  textContent String
+  wordCount   Int      @default(0)
+  isFree      Boolean  @default(false)
+
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  highlights  Highlight[]
+  notes       Note[]
+  faqs        SectionFAQ[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([bookId, slug])
+  @@unique([bookId, order])
+}
+
+model SectionFAQ {
+  id          String   @id @default(cuid())
+  sectionId   String
+  question    String
+  answer      String
+  isApproved  Boolean  @default(false)
+  isCustom    Boolean  @default(false)
+  order       Int      @default(0)
+
+  section     BookSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sectionId])
+}
+
+model Highlight {
+  id           String   @id @default(cuid())
+  sectionId    String
+  buyerEmail   String
+  bookId       String
+  startOffset  Int
+  endOffset    Int
+  selectedText String
+  color        String   @default("yellow")
+  shareToken   String?  @unique
+  isPublic     Boolean  @default(false)
+
+  section      BookSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+
+  @@index([sectionId, buyerEmail])
+  @@index([bookId, buyerEmail])
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  sectionId   String
+  buyerEmail  String
+  bookId      String
+  highlightId String?
+  content     String
+  shareToken  String?  @unique
+  isPublic    Boolean  @default(false)
+
+  section     BookSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([sectionId, buyerEmail])
+  @@index([bookId, buyerEmail])
+}
+
+model ReaderAccess {
+  id          String    @id @default(cuid())
+  bookId      String
+  orderId     String?
+  buyerEmail  String
+  accessToken String    @unique
+  isGift      Boolean   @default(false)
+  giftedBy    String?
+  expiresAt   DateTime?
+
+  book        Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@unique([bookId, buyerEmail])
+  @@index([accessToken])
+}
+
+model GiftLink {
+  id         String    @id @default(cuid())
+  bookId     String
+  createdBy  String
+  token      String    @unique
+  claimedBy  String?
+  claimedAt  DateTime?
+
+  book       Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
+
+  @@unique([bookId, createdBy])
+}
