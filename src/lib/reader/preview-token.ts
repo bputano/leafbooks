@@ -1,6 +1,6 @@
 import { createHmac } from "crypto";
 
-const SECRET = process.env.NEXTAUTH_SECRET!;
+const SECRET = process.env.AUTH_SECRET!;
 const TOKEN_LENGTH = 16; // 16 hex chars = 8 bytes
 
 function computeHmac(payload: string): string {

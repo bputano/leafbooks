@@ -93,8 +93,7 @@ export default async function TitlesPage() {
                 {book.status === "PUBLISHED" && book._count.sections > 0 && (
                   <Link
                     href={`/${author.slug}/${book.slug}/read`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700"
+                    className="relative z-10 flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700"
                   >
                     <Eye className="h-3.5 w-3.5" />
                     Preview Reader
