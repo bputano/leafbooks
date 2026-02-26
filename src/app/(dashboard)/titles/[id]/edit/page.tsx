@@ -48,9 +48,10 @@ export default async function EditTitlePage({
     preOrderDate: book.preOrderDate?.toISOString() || null,
     isPreOrder: book.isPreOrder,
     status: book.status,
+    authorSlug: author.slug,
     formats: book.formats.map((f) => ({
       id: f.id,
-      type: f.type as "HARDCOVER" | "PAPERBACK" | "EBOOK",
+      type: f.type as "HARDCOVER" | "PAPERBACK" | "EBOOK" | "LEAF_EDITION",
       price: f.price,
       isActive: f.isActive,
       trimSize: f.trimSize,

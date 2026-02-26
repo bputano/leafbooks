@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, ChevronDown, ChevronUp, Eye, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PLATFORM_FEES } from "@/config/pricing";
@@ -44,17 +44,26 @@ function formatCents(cents: number) {
 function FormatCard({
   format,
   bookId,
+  bookSlug,
+  authorSlug,
+  hasManuscript,
   onUpdate,
   onDelete,
 }: {
   format: Format;
   bookId: string;
+  bookSlug: string;
+  authorSlug: string | null;
+  hasManuscript: boolean;
   onUpdate: (updated: Format) => void;
   onDelete: () => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [processed, setProcessed] = useState(false);
   const isPrint = format.type !== "EBOOK" && format.type !== "LEAF_EDITION";
+  const isLeafEdition = format.type === "LEAF_EDITION";
 
   const printingCost = format.printingCostCents || 0;
   // TODO: use author's actual subscription tier when available
@@ -108,6 +117,25 @@ function FormatCard({
       // Cost estimate is non-critical
     }
   }
+
+  async function processForPreview() {
+    if (!hasManuscript) return;
+    setProcessing(true);
+    try {
+      const res = await fetch(`/api/books/${bookId}/process-content`, {
+        method: "POST",
+      });
+      if (res.ok) {
+        setProcessed(true);
+      }
+    } catch {
+      // Processing failed — non-critical
+    } finally {
+      setProcessing(false);
+    }
+  }
+
+  const readerUrl = authorSlug ? `/${authorSlug}/${bookSlug}/read` : null;
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white">
@@ -331,13 +359,56 @@ function FormatCard({
             </div>
           </div>
 
-          <button
-            onClick={onDelete}
-            className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
-          >
-            <Trash2 className="h-3.5 w-3.5" />
-            Remove format
-          </button>
+          {isLeafEdition && hasManuscript && (
+            <div className="rounded-lg border border-leaf-200 bg-leaf-50 p-4">
+              <h4 className="mb-2 text-sm font-medium text-gray-700">
+                Preview Leaf Reader
+              </h4>
+              {processed && readerUrl ? (
+                <a
+                  href={readerUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
+                >
+                  <Eye className="h-4 w-4" />
+                  Open Leaf Reader
+                </a>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={processForPreview}
+                  disabled={processing}
+                >
+                  {processing ? (
+                    <>
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                      Processing manuscript...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="mr-1.5 h-4 w-4" />
+                      Process &amp; Preview
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {!isLeafEdition && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+              Remove format
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -356,10 +427,16 @@ export function SetupFormats({ wizard }: SetupFormatsProps) {
   async function addFormat(type: "HARDCOVER" | "PAPERBACK" | "EBOOK" | "LEAF_EDITION") {
     setAdding(true);
     try {
+      // For print formats, pre-fill pageCount from any existing format that has it
+      let pageCount: number | undefined;
+      if (type === "HARDCOVER" || type === "PAPERBACK") {
+        const withPages = bookData.formats.find((f) => f.pageCount);
+        if (withPages) pageCount = withPages.pageCount!;
+      }
       const res = await fetch(`/api/books/${bookData.id}/formats`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type, price: 0 }),
+        body: JSON.stringify({ type, price: 0, ...(pageCount && { pageCount }) }),
       });
       if (res.ok) {
         const { format } = await res.json();
@@ -408,6 +485,9 @@ export function SetupFormats({ wizard }: SetupFormatsProps) {
             key={format.id}
             format={format}
             bookId={bookData.id}
+            bookSlug={bookData.slug}
+            authorSlug={bookData.authorSlug}
+            hasManuscript={!!bookData.manuscriptFileUrl}
             onUpdate={updateFormatLocal}
             onDelete={() => deleteFormat(format.id)}
           />

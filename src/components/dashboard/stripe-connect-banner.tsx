@@ -16,15 +16,24 @@ export function StripeConnectSetup({
   accountId,
 }: StripeConnectSetupProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleConnect() {
     setLoading(true);
+    setError(null);
     try {
       const res = await fetch("/api/stripe/connect", { method: "POST" });
       const data = await res.json();
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        setError(
+          data.error ||
+            "Unable to connect to Stripe. Please ensure Stripe is configured and try again."
+        );
       }
+    } catch {
+      setError("Failed to connect to Stripe. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -69,6 +78,9 @@ export function StripeConnectSetup({
         <Button onClick={handleConnect} loading={loading} className="mt-4">
           Complete Setup
         </Button>
+        {error && (
+          <p className="mt-2 text-sm text-red-600">{error}</p>
+        )}
       </div>
     );
   }
@@ -89,6 +101,9 @@ export function StripeConnectSetup({
       <Button onClick={handleConnect} loading={loading} className="mt-4">
         Connect Stripe Account
       </Button>
+      {error && (
+        <p className="mt-2 text-sm text-red-600">{error}</p>
+      )}
     </div>
   );
 }

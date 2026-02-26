@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 
 const createFormatSchema = z.object({
-  type: z.enum(["HARDCOVER", "PAPERBACK", "EBOOK"]),
+  type: z.enum(["HARDCOVER", "PAPERBACK", "EBOOK", "LEAF_EDITION"]),
   price: z.number().int().min(0),
   trimSize: z.string().optional(),
   paperType: z.string().optional(),

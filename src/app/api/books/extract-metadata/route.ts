@@ -84,5 +84,17 @@ export async function POST(req: NextRequest) {
     });
   }
 
+  // Propagate pageCount to existing print formats that don't have it set
+  if (metadata.pageCount) {
+    await db.bookFormat.updateMany({
+      where: {
+        bookId,
+        type: { in: ["HARDCOVER", "PAPERBACK"] },
+        pageCount: null,
+      },
+      data: { pageCount: metadata.pageCount },
+    });
+  }
+
   return NextResponse.json({ metadata });
 }

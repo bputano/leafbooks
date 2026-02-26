@@ -44,6 +44,35 @@ export function UploadFiles({ wizard }: UploadFilesProps) {
             if (bookRes.ok) {
               const { book: updatedBook } = await bookRes.json();
               wizard.setBookData(updatedBook);
+
+              // Auto-create Leaf Edition if not already present
+              const hasLeafEdition = updatedBook.formats?.some(
+                (f: { type: string }) => f.type === "LEAF_EDITION"
+              );
+              if (!hasLeafEdition) {
+                try {
+                  const fmtRes = await fetch(
+                    `/api/books/${wizard.bookData.id}/formats`,
+                    {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        type: "LEAF_EDITION",
+                        price: 0,
+                      }),
+                    }
+                  );
+                  if (fmtRes.ok) {
+                    const { format } = await fmtRes.json();
+                    wizard.setBookData((prev) => ({
+                      ...prev,
+                      formats: [...prev.formats, format],
+                    }));
+                  }
+                } catch {
+                  // Non-critical — author can add manually
+                }
+              }
             }
           }
         }

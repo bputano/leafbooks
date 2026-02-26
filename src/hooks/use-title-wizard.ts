@@ -21,6 +21,7 @@ interface Book {
   preOrderDate: string | null;
   isPreOrder: boolean;
   status: string;
+  authorSlug: string | null;
   formats: Format[];
 }
 
