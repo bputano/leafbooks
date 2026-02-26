@@ -1,8 +1,10 @@
-import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { getToken } from "next-auth/jwt";
 
-export default auth((req) => {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
   // Protect all dashboard routes
   if (
@@ -10,7 +12,7 @@ export default auth((req) => {
     pathname.startsWith("/sales") ||
     pathname.startsWith("/settings")
   ) {
-    if (!req.auth) {
+    if (!token) {
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
@@ -19,13 +21,13 @@ export default auth((req) => {
 
   // Redirect logged-in users away from auth pages
   if (pathname === "/login" || pathname === "/register") {
-    if (req.auth) {
+    if (token) {
       return NextResponse.redirect(new URL("/titles", req.url));
     }
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
   matcher: [
