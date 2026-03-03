@@ -165,8 +165,16 @@ async function buildSectionsFromToc(pages: PdfPage[]): Promise<Section[]> {
   }
 
   const gemini = getGeminiClient();
-  const sections: Section[] = [];
   const usedSlugs = new Set<string>();
+
+  // Prepare all chapter data first (no Gemini calls yet)
+  const chapterData: Array<{
+    index: number;
+    title: string;
+    heading: string;
+    slug: string;
+    textContent: string;
+  }> = [];
 
   for (let i = 0; i < tocEntries.length; i++) {
     const entry = tocEntries[i];
@@ -184,21 +192,47 @@ async function buildSectionsFromToc(pages: PdfPage[]): Promise<Section[]> {
     const textContent = removeHeadingFromText(entry.title, pageTexts).trim();
     if (!textContent || countWords(textContent) < 5) continue;
 
-    const heading = cleanHeading(entry.title);
-    const htmlContent = await formatWithGemini(textContent, gemini, entry.title, heading);
-
     let slug = slugify(entry.title);
     if (usedSlugs.has(slug)) slug = `${slug}-${i + 1}`;
     usedSlugs.add(slug);
 
-    sections.push({
+    chapterData.push({
+      index: i,
+      title: entry.title,
+      heading: cleanHeading(entry.title),
       slug,
-      heading,
-      htmlContent,
       textContent,
-      wordCount: countWords(textContent),
     });
   }
+
+  // Process Gemini formatting in parallel batches of 5
+  const BATCH_SIZE = 5;
+  const htmlResults = new Map<number, string>();
+
+  for (let b = 0; b < chapterData.length; b += BATCH_SIZE) {
+    const batch = chapterData.slice(b, b + BATCH_SIZE);
+    console.log(`  Formatting batch ${Math.floor(b / BATCH_SIZE) + 1}/${Math.ceil(chapterData.length / BATCH_SIZE)} (${batch.length} chapters)...`);
+
+    const results = await Promise.all(
+      batch.map(async (ch) => {
+        const html = await formatWithGemini(ch.textContent, gemini, ch.title, ch.heading);
+        return { index: ch.index, html };
+      })
+    );
+
+    for (const r of results) {
+      htmlResults.set(r.index, r.html);
+    }
+  }
+
+  // Assemble sections in order
+  const sections: Section[] = chapterData.map((ch) => ({
+    slug: ch.slug,
+    heading: ch.heading,
+    htmlContent: htmlResults.get(ch.index) || textToHtml(ch.textContent),
+    textContent: ch.textContent,
+    wordCount: countWords(ch.textContent),
+  }));
 
   return sections;
 }
@@ -291,8 +325,14 @@ async function buildSectionsFromHeuristics(pages: PdfPage[]): Promise<Section[]>
 
   if (chapterStarts.length === 0) return [];
 
-  const sections: Section[] = [];
   const usedSlugs = new Set<string>();
+  const chapterData: Array<{
+    index: number;
+    title: string;
+    slug: string;
+    heading: string;
+    textContent: string;
+  }> = [];
 
   for (let i = 0; i < chapterStarts.length; i++) {
     const start = chapterStarts[i];
@@ -312,14 +352,39 @@ async function buildSectionsFromHeuristics(pages: PdfPage[]): Promise<Section[]>
     if (usedSlugs.has(slug)) slug = `${slug}-${i + 1}`;
     usedSlugs.add(slug);
 
-    sections.push({
+    chapterData.push({
+      index: i,
+      title: start.title,
       slug,
       heading: cleanHeading(start.title),
-      htmlContent: await formatWithGemini(textContent, gemini),
       textContent,
-      wordCount: countWords(textContent),
     });
   }
+
+  // Process Gemini formatting in parallel batches of 5
+  const BATCH_SIZE = 5;
+  const htmlResults = new Map<number, string>();
+
+  for (let b = 0; b < chapterData.length; b += BATCH_SIZE) {
+    const batch = chapterData.slice(b, b + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map(async (ch) => {
+        const html = await formatWithGemini(ch.textContent, gemini);
+        return { index: ch.index, html };
+      })
+    );
+    for (const r of results) {
+      htmlResults.set(r.index, r.html);
+    }
+  }
+
+  const sections: Section[] = chapterData.map((ch) => ({
+    slug: ch.slug,
+    heading: ch.heading,
+    htmlContent: htmlResults.get(ch.index) || textToHtml(ch.textContent),
+    textContent: ch.textContent,
+    wordCount: countWords(ch.textContent),
+  }));
 
   return sections;
 }
@@ -688,7 +753,7 @@ async function formatWithGemini(
   console.log(`  Gemini: formatting${tag} (${wordCount} words)...`);
 
   const model = gemini.getGenerativeModel({ model: "gemini-2.0-flash" });
-  const maxRetries = 5;
+  const maxRetries = 2;
   const processedText = preprocessPdfText(text);
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
