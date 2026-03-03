@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { processManuscript } from "@/lib/reader/content-pipeline";
 import { getPublicUrl } from "@/lib/storage";
 
 // POST — publish/launch a book
@@ -87,6 +86,8 @@ export async function POST(
       const fileUrl = book.manuscriptFileUrl.startsWith("http")
         ? book.manuscriptFileUrl
         : getPublicUrl(book.manuscriptFileUrl);
+      // Dynamic import to avoid bundling heavy deps into this serverless function
+      const { processManuscript } = await import("@/lib/reader/content-pipeline");
       // Run in background — don't block publish response
       processManuscript(
         book.id,
