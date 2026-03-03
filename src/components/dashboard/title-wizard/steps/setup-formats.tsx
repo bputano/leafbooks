@@ -369,17 +369,18 @@ function FormatCard({
               <h4 className="mb-2 text-sm font-medium text-gray-700">
                 Preview Leaf Reader
               </h4>
-              {processed && readerUrl ? (
-                <a
-                  href={readerUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
-                >
-                  <Eye className="h-4 w-4" />
-                  Open Leaf Reader
-                </a>
-              ) : (
+              <div className="flex items-center gap-2">
+                {processed && readerUrl && (
+                  <a
+                    href={readerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
+                  >
+                    <Eye className="h-4 w-4" />
+                    Open Leaf Reader
+                  </a>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -389,16 +390,16 @@ function FormatCard({
                   {processing ? (
                     <>
                       <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                      Processing manuscript...
+                      Processing...
                     </>
                   ) : (
                     <>
                       <Eye className="mr-1.5 h-4 w-4" />
-                      Process &amp; Preview
+                      {processed ? "Reprocess" : "Process & Preview"}
                     </>
                   )}
                 </Button>
-              )}
+              </div>
               {processError && (
                 <p className="text-xs text-red-600">{processError}</p>
               )}

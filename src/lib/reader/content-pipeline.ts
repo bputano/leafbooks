@@ -112,12 +112,158 @@ async function processPdf(buffer: ArrayBuffer): Promise<Section[]> {
 
   await pdfParse(Buffer.from(buffer), { pagerender: pageRenderer });
 
-  // Strategy 1: Detect chapter headings via regex heuristics
+  // Strategy 1: Parse TOC if present and use it to find chapters
+  const tocSections = await buildSectionsFromToc(pages);
+  if (tocSections.length > 0) return tocSections;
+
+  // Strategy 2: Detect chapter headings via regex heuristics
   const sections = await buildSectionsFromHeuristics(pages);
   if (sections.length > 0) return sections;
 
-  // Strategy 2: Fallback — one section per logical group of pages
+  // Strategy 3: Fallback — one section per logical group of pages
   return await buildFallbackSections(pages);
+}
+
+/**
+ * Parse the Table of Contents page(s) to extract chapter titles,
+ * then locate each chapter's start page in the document.
+ */
+async function buildSectionsFromToc(pages: PdfPage[]): Promise<Section[]> {
+  // Find TOC page(s): look for pages with many dot-leader lines
+  // (e.g., "Chapter Title...........................15")
+  const tocEntries: Array<{ title: string; pageNum: number }> = [];
+
+  for (let i = 0; i < Math.min(10, pages.length); i++) {
+    const lines = pages[i].text.split("\n").map((l) => l.trim()).filter(Boolean);
+    const dotLines = lines.filter((l) => /\.{3,}/.test(l));
+    if (dotLines.length < 3) continue; // Not a TOC page
+
+    // Parse each dot-leader line: "Title...............pageNum"
+    for (const line of lines) {
+      const match = line.match(/^(.+?)\.{3,}\s*(\d+)\s*$/);
+      if (!match) continue;
+      const title = match[1].trim();
+      const pageNum = parseInt(match[2], 10);
+      if (!title || isNaN(pageNum)) continue;
+      // Skip the TOC entry for "Table of Contents" itself
+      if (/^table\s+of\s+contents?$/i.test(title)) continue;
+      tocEntries.push({ title, pageNum });
+    }
+  }
+
+  if (tocEntries.length < 2) return [];
+
+  console.log(`  TOC found with ${tocEntries.length} entries`);
+
+  // The TOC page numbers are the book's printed page numbers, not PDF page indices.
+  // We need to find the offset between printed page numbers and PDF page indices.
+  // Strategy: find where multiple TOC entries appear in the PDF and take consensus.
+  const offset = findPageOffset(tocEntries, pages);
+  if (offset === null) {
+    console.warn("  Could not determine page offset from TOC, falling back");
+    return [];
+  }
+
+  const gemini = getGeminiClient();
+  const sections: Section[] = [];
+  const usedSlugs = new Set<string>();
+
+  for (let i = 0; i < tocEntries.length; i++) {
+    const entry = tocEntries[i];
+    const nextEntry = tocEntries[i + 1];
+    const startIdx = entry.pageNum + offset;
+    const endIdx = nextEntry ? nextEntry.pageNum + offset : pages.length;
+
+    if (startIdx < 0 || startIdx >= pages.length) continue;
+
+    const pageTexts = pages
+      .slice(startIdx, Math.min(endIdx, pages.length))
+      .map((p) => p.text)
+      .join("\n\n");
+
+    const textContent = removeHeadingFromText(entry.title, pageTexts).trim();
+    if (!textContent || countWords(textContent) < 5) continue;
+
+    const heading = cleanHeading(entry.title);
+    const htmlContent = await formatWithGemini(textContent, gemini, entry.title, heading);
+
+    let slug = slugify(entry.title);
+    if (usedSlugs.has(slug)) slug = `${slug}-${i + 1}`;
+    usedSlugs.add(slug);
+
+    sections.push({
+      slug,
+      heading,
+      htmlContent,
+      textContent,
+      wordCount: countWords(textContent),
+    });
+  }
+
+  return sections;
+}
+
+/**
+ * Find the PDF page index offset relative to printed page numbers.
+ * Tries multiple TOC entries and takes the most common offset.
+ */
+function findPageOffset(
+  entries: Array<{ title: string; pageNum: number }>,
+  pages: PdfPage[]
+): number | null {
+  const offsets: number[] = [];
+
+  for (const entry of entries.slice(0, 8)) {
+    // Extract the most distinctive part of the title:
+    // For "Introduction: Why Great Founders Write" use "Introduction"
+    // For "1: Begin with the End in Mind" use "Begin with the End in Mind"
+    // For "PART 1: WRITE WITH PURPOSE" use "WRITE WITH PURPOSE"
+    let searchText = entry.title;
+    const colonIdx = searchText.indexOf(":");
+    if (colonIdx !== -1) {
+      const afterColon = searchText.slice(colonIdx + 1).trim();
+      const beforeColon = searchText.slice(0, colonIdx).trim();
+      // Use whichever part is longer/more distinctive
+      searchText = afterColon.length > beforeColon.length ? afterColon : beforeColon;
+    }
+    const collapsed = searchText.toLowerCase().replace(/\s+/g, "");
+    if (collapsed.length < 4) continue;
+
+    for (let idx = 0; idx < pages.length; idx++) {
+      // Skip TOC pages
+      const allLines = pages[idx].text.split("\n").filter((l) => l.trim());
+      const dotLines = allLines.filter((l) => /\.{3,}/.test(l));
+      if (dotLines.length > 3) continue;
+
+      // Check first 10 lines of the page
+      const topLines = allLines.slice(0, 10);
+      const topText = topLines.join(" ").toLowerCase().replace(/\s+/g, "");
+
+      if (topText.includes(collapsed)) {
+        offsets.push(idx - entry.pageNum);
+        break;
+      }
+    }
+  }
+
+  if (offsets.length === 0) return null;
+
+  // Return the most common offset
+  const counts = new Map<number, number>();
+  for (const o of offsets) {
+    counts.set(o, (counts.get(o) || 0) + 1);
+  }
+  let bestOffset = offsets[0];
+  let bestCount = 0;
+  for (const [o, c] of counts) {
+    if (c > bestCount) {
+      bestOffset = o;
+      bestCount = c;
+    }
+  }
+
+  console.log(`  Page offset: ${bestOffset} (${bestCount}/${offsets.length} entries agree)`);
+  return bestOffset;
 }
 
 /**
@@ -126,6 +272,7 @@ async function processPdf(buffer: ArrayBuffer): Promise<Section[]> {
  */
 async function buildSectionsFromHeuristics(pages: PdfPage[]): Promise<Section[]> {
   const gemini = getGeminiClient();
+
   const chapterPattern =
     /^(?:(?:chapter|part)\s+\d+[:\s].*|(?:introduction|foreword|preface|prologue|epilogue|conclusion|postscript|afterword|acknowledgments|acknowledgements|about the author|appendix|bibliography|glossary)(?:[:\s].*)?)/i;
 
