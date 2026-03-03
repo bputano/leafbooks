@@ -3,6 +3,37 @@ import JSZip from "jszip";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/db";
 
+// Polyfill browser APIs that pdf.js (bundled in pdf-parse) expects in Node/serverless
+if (typeof globalThis.DOMMatrix === "undefined") {
+  // Minimal DOMMatrix polyfill — pdf.js uses it for transform calculations
+  // but the actual values don't matter for text extraction
+  class DOMMatrixPolyfill {
+    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
+    m11 = 1; m12 = 0; m13 = 0; m14 = 0;
+    m21 = 0; m22 = 1; m23 = 0; m24 = 0;
+    m31 = 0; m32 = 0; m33 = 1; m34 = 0;
+    m41 = 0; m42 = 0; m43 = 0; m44 = 1;
+    is2D = true; isIdentity = true;
+    constructor(init?: number[] | string) {
+      if (Array.isArray(init) && init.length === 6) {
+        [this.a, this.b, this.c, this.d, this.e, this.f] = init;
+        this.m11 = this.a; this.m12 = this.b;
+        this.m21 = this.c; this.m22 = this.d;
+        this.m41 = this.e; this.m42 = this.f;
+      }
+    }
+    inverse() { return new DOMMatrixPolyfill(); }
+    multiply() { return new DOMMatrixPolyfill(); }
+    translate() { return new DOMMatrixPolyfill(); }
+    scale() { return new DOMMatrixPolyfill(); }
+    transformPoint(p: { x: number; y: number }) { return p; }
+    static fromMatrix() { return new DOMMatrixPolyfill(); }
+    static fromFloat32Array() { return new DOMMatrixPolyfill(); }
+    static fromFloat64Array() { return new DOMMatrixPolyfill(); }
+  }
+  (globalThis as Record<string, unknown>).DOMMatrix = DOMMatrixPolyfill;
+}
+
 // pdf-parse v2 uses a class-based API with named export
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { PDFParse } = require("pdf-parse");
