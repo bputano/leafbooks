@@ -30,7 +30,16 @@ export function Launch({ wizard }: LaunchProps) {
       const res = await fetch(`/api/books/${bookData.id}/publish`, {
         method: "POST",
       });
-      const data = await res.json();
+
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Non-JSON response from publish API:", text.slice(0, 500));
+        setError("Server error — check Vercel function logs for details.");
+        return;
+      }
 
       if (!res.ok) {
         setError(data.error || "Failed to publish");
@@ -39,6 +48,11 @@ export function Launch({ wizard }: LaunchProps) {
 
       setPublished(true);
       setPublishedUrl(data.url);
+    } catch (err) {
+      console.error("Publish failed:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to publish. Check the console for details."
+      );
     } finally {
       setPublishing(false);
     }
