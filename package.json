@@ -34,7 +34,7 @@
     "next": "^15.1.0",
     "next-auth": "^5.0.0-beta.30",
     "pdf-lib": "^1.17.1",
-    "pdf-parse": "^2.4.5",
+    "pdf-parse": "^1.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "satori": "^0.19.2",

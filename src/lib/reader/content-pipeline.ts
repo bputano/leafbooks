@@ -2,41 +2,8 @@ import mammoth from "mammoth";
 import JSZip from "jszip";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { db } from "@/lib/db";
-
-// Polyfill browser APIs that pdf.js (bundled in pdf-parse) expects in Node/serverless
-if (typeof globalThis.DOMMatrix === "undefined") {
-  // Minimal DOMMatrix polyfill — pdf.js uses it for transform calculations
-  // but the actual values don't matter for text extraction
-  class DOMMatrixPolyfill {
-    a = 1; b = 0; c = 0; d = 1; e = 0; f = 0;
-    m11 = 1; m12 = 0; m13 = 0; m14 = 0;
-    m21 = 0; m22 = 1; m23 = 0; m24 = 0;
-    m31 = 0; m32 = 0; m33 = 1; m34 = 0;
-    m41 = 0; m42 = 0; m43 = 0; m44 = 1;
-    is2D = true; isIdentity = true;
-    constructor(init?: number[] | string) {
-      if (Array.isArray(init) && init.length === 6) {
-        [this.a, this.b, this.c, this.d, this.e, this.f] = init;
-        this.m11 = this.a; this.m12 = this.b;
-        this.m21 = this.c; this.m22 = this.d;
-        this.m41 = this.e; this.m42 = this.f;
-      }
-    }
-    inverse() { return new DOMMatrixPolyfill(); }
-    multiply() { return new DOMMatrixPolyfill(); }
-    translate() { return new DOMMatrixPolyfill(); }
-    scale() { return new DOMMatrixPolyfill(); }
-    transformPoint(p: { x: number; y: number }) { return p; }
-    static fromMatrix() { return new DOMMatrixPolyfill(); }
-    static fromFloat32Array() { return new DOMMatrixPolyfill(); }
-    static fromFloat64Array() { return new DOMMatrixPolyfill(); }
-  }
-  (globalThis as Record<string, unknown>).DOMMatrix = DOMMatrixPolyfill;
-}
-
-// pdf-parse v2 uses a class-based API with named export
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { PDFParse } = require("pdf-parse");
+const pdfParse = require("pdf-parse");
 
 export interface Section {
   slug: string;
@@ -115,252 +82,42 @@ export async function processManuscript(
 
 // ─── PDF Processing ─────────────────────────────────────
 
-interface PdfOutlineItem {
-  title: string;
-  dest: Array<{ num: number; gen: number } | { name: string }> | null;
-  items: PdfOutlineItem[];
-}
-
 interface PdfPage {
   text: string;
   num: number;
 }
 
 async function processPdf(buffer: ArrayBuffer): Promise<Section[]> {
-  const parser = new PDFParse(new Uint8Array(buffer));
-  await parser.load();
-
-  const info = await parser.getInfo();
-  const textResult = await parser.getText();
-  const pages: PdfPage[] = textResult.pages;
-  const outline: PdfOutlineItem[] | undefined = info.outline;
-
-  parser.destroy();
-
-  // Strategy 1: Use PDF outline (bookmarks) if available
-  if (outline && outline.length > 0) {
-    const sections = await buildSectionsFromOutline(outline, pages);
-    if (sections.length > 0) return sections;
+  // Collect per-page text using a custom page renderer
+  const pages: PdfPage[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async function pageRenderer(pageData: any): Promise<string> {
+    const textContent = await pageData.getTextContent({
+      normalizeWhitespace: false,
+      disableCombineTextItems: false,
+    });
+    let lastY: number | undefined;
+    let text = "";
+    for (const item of textContent.items) {
+      if (lastY === item.transform[5] || lastY === undefined) {
+        text += item.str;
+      } else {
+        text += "\n" + item.str;
+      }
+      lastY = item.transform[5];
+    }
+    pages.push({ text, num: pages.length + 1 });
+    return text;
   }
 
-  // Strategy 2: Detect chapter headings via regex heuristics
+  await pdfParse(Buffer.from(buffer), { pagerender: pageRenderer });
+
+  // Strategy 1: Detect chapter headings via regex heuristics
   const sections = await buildSectionsFromHeuristics(pages);
   if (sections.length > 0) return sections;
 
-  // Strategy 3: Fallback — one section per logical group of pages
+  // Strategy 2: Fallback — one section per logical group of pages
   return await buildFallbackSections(pages);
-}
-
-/**
- * Build sections using the PDF's embedded outline/bookmarks.
- * The outline gives us chapter titles; we match them against page text
- * to determine where each chapter starts.
- */
-async function buildSectionsFromOutline(
-  outline: PdfOutlineItem[],
-  pages: PdfPage[]
-): Promise<Section[]> {
-  const gemini = getGeminiClient();
-  // Flatten the outline to top-level chapters only (skip deep sub-items)
-  const chapters = flattenOutlineToChapters(outline);
-
-  if (chapters.length === 0) return [];
-
-  // Find the page index where each chapter heading appears
-  const chapterPages: Array<{ title: string; pageIndex: number }> = [];
-
-  for (const chapter of chapters) {
-    const pageIndex = findHeadingInPages(chapter.title, pages);
-    if (pageIndex !== -1) {
-      chapterPages.push({ title: chapter.title, pageIndex });
-    }
-  }
-
-  if (chapterPages.length === 0) return [];
-
-  // Sort by page index
-  chapterPages.sort((a, b) => a.pageIndex - b.pageIndex);
-
-  // Build sections: each chapter runs from its start page to the next chapter's start
-  const sections: Section[] = [];
-  const usedSlugs = new Set<string>();
-
-  for (let i = 0; i < chapterPages.length; i++) {
-    const chapter = chapterPages[i];
-    const nextChapter = chapterPages[i + 1];
-    const startPage = chapter.pageIndex;
-    const endPage = nextChapter ? nextChapter.pageIndex : pages.length;
-
-    // Collect text from all pages in this chapter
-    const pageTexts = pages
-      .slice(startPage, endPage)
-      .map((p) => p.text)
-      .join("\n\n");
-
-    // Remove the heading from the body text if it appears at the start
-    const textContent = removeHeadingFromText(chapter.title, pageTexts).trim();
-    if (!textContent) continue;
-
-    const heading = cleanHeading(chapter.title);
-    const htmlContent = await formatWithGemini(textContent, gemini, chapter.title, heading);
-
-    let slug = slugify(chapter.title);
-    if (usedSlugs.has(slug)) {
-      slug = `${slug}-${i + 1}`;
-    }
-    usedSlugs.add(slug);
-
-    sections.push({
-      slug,
-      heading: cleanHeading(chapter.title),
-      htmlContent,
-      textContent,
-      wordCount: countWords(textContent),
-    });
-  }
-
-  // Capture any content before the first chapter as front matter
-  if (chapterPages[0].pageIndex > 0) {
-    const frontPages = pages.slice(0, chapterPages[0].pageIndex);
-    const frontText = frontPages
-      .map((p) => p.text)
-      .join("\n\n")
-      .trim();
-    if (frontText && countWords(frontText) > 20) {
-      sections.unshift({
-        slug: "front-matter",
-        heading: "Front Matter",
-        htmlContent: await formatWithGemini(frontText, gemini, "Front Matter"),
-        textContent: frontText,
-        wordCount: countWords(frontText),
-      });
-    }
-  }
-
-  return sections;
-}
-
-/**
- * Flatten a nested PDF outline into a flat list of top-level chapters.
- * PDF authors typically put chapters at depth 0 and sub-sections as children.
- * We take all depth-0 items as chapters, skipping obvious non-content items
- * (duplicates, very short metadata like author names).
- */
-function flattenOutlineToChapters(
-  outline: PdfOutlineItem[]
-): Array<{ title: string; depth: number }> {
-  const result: Array<{ title: string; depth: number }> = [];
-  const seenTitles = new Set<string>();
-
-  for (const item of outline) {
-    const title = item.title?.trim();
-    if (!title) continue;
-
-    // Skip duplicates (some PDFs repeat the book title)
-    const normalizedTitle = title.toLowerCase();
-    if (seenTitles.has(normalizedTitle)) continue;
-    seenTitles.add(normalizedTitle);
-
-    // Skip very short items that are likely metadata (author name, subtitle)
-    // unless they're known section names
-    if (title.split(/\s+/).length <= 2 && !isTopLevelSection(title)) continue;
-
-    result.push({ title, depth: 0 });
-  }
-
-  return result;
-}
-
-/**
- * Determine if an outline item title represents a top-level section
- * that should be its own page in the reader.
- */
-function isTopLevelSection(title: string): boolean {
-  const lower = title.toLowerCase();
-
-  // Common chapter patterns
-  if (/^(chapter|part)\s+\d/i.test(title)) return true;
-  if (/^\d+[\s:.]+\w/i.test(title)) return true; // "1 Title", "1: Title", "1. Title"
-
-  // Named sections
-  const namedSections = [
-    "introduction",
-    "foreword",
-    "preface",
-    "prologue",
-    "epilogue",
-    "conclusion",
-    "postscript",
-    "afterword",
-    "acknowledgments",
-    "acknowledgements",
-    "about the author",
-    "appendix",
-    "bibliography",
-    "glossary",
-    "index",
-    "table of contents",
-    "dedication",
-    "copyright",
-  ];
-  for (const name of namedSections) {
-    if (lower.startsWith(name)) return true;
-  }
-
-  // "Part N" sections
-  if (/^part\s+/i.test(title)) return true;
-
-  return false;
-}
-
-/**
- * Find the page index where a heading appears in the page text.
- * Uses multi-pass matching: first looks for the heading as a standalone line
- * near the top of a page, then falls back to fuzzy substring matching.
- * This avoids false matches on Table of Contents pages.
- */
-function findHeadingInPages(
-  heading: string,
-  pages: PdfPage[]
-): number {
-  const collapsedHeading = heading.toLowerCase().replace(/\s+/g, "");
-
-  // Pass 1: Look for the heading as a standalone line in the first 10 lines
-  // of a page. This is the strongest signal — chapter headings are at the top.
-  for (let i = 0; i < pages.length; i++) {
-    const lines = pages[i].text.split("\n").slice(0, 10);
-    for (const line of lines) {
-      const collapsedLine = line.toLowerCase().replace(/\s+/g, "");
-      // Check if the line IS the heading (not just contains it)
-      if (
-        collapsedLine === collapsedHeading ||
-        // Allow the line to have minor extra chars (punctuation, numbers)
-        (collapsedLine.length > 3 &&
-          collapsedLine.length <= collapsedHeading.length * 1.3 &&
-          collapsedLine.includes(collapsedHeading))
-      ) {
-        return i;
-      }
-    }
-  }
-
-  // Pass 2: Broader match — heading appears somewhere in the page but NOT
-  // on a page that looks like a table of contents (many short lines with dots/numbers)
-  for (let i = 0; i < pages.length; i++) {
-    const pageText = pages[i].text;
-    const collapsedPage = pageText.toLowerCase().replace(/\s+/g, "");
-
-    if (!collapsedPage.includes(collapsedHeading)) continue;
-
-    // Skip pages that look like a TOC (many lines with dot leaders or page numbers)
-    const lines = pageText.split("\n").filter((l) => l.trim());
-    const dotLines = lines.filter((l) => /\.{3,}/.test(l) || /\.\s*\d+\s*$/.test(l));
-    if (dotLines.length > 3) continue; // Likely a TOC page
-
-    return i;
-  }
-
-  return -1;
 }
 
 /**
