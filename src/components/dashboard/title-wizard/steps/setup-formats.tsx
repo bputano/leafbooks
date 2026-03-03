@@ -62,6 +62,7 @@ function FormatCard({
   const [saving, setSaving] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [processed, setProcessed] = useState(false);
+  const [processError, setProcessError] = useState<string | null>(null);
   const isPrint = format.type !== "EBOOK" && format.type !== "LEAF_EDITION";
   const isLeafEdition = format.type === "LEAF_EDITION";
 
@@ -121,15 +122,19 @@ function FormatCard({
   async function processForPreview() {
     if (!hasManuscript) return;
     setProcessing(true);
+    setProcessError(null);
     try {
       const res = await fetch(`/api/books/${bookId}/process-content`, {
         method: "POST",
       });
+      const data = await res.json();
       if (res.ok) {
         setProcessed(true);
+      } else {
+        setProcessError(data.error || `Processing failed (${res.status})`);
       }
-    } catch {
-      // Processing failed — non-critical
+    } catch (err) {
+      setProcessError(err instanceof Error ? err.message : "Processing failed");
     } finally {
       setProcessing(false);
     }
@@ -393,6 +398,9 @@ function FormatCard({
                     </>
                   )}
                 </Button>
+              )}
+              {processError && (
+                <p className="text-xs text-red-600">{processError}</p>
               )}
             </div>
           )}
