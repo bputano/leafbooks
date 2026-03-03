@@ -63,6 +63,7 @@ function FormatCard({
   const [processing, setProcessing] = useState(false);
   const [processed, setProcessed] = useState(false);
   const [processError, setProcessError] = useState<string | null>(null);
+  const [processInfo, setProcessInfo] = useState<string | null>(null);
   const isPrint = format.type !== "EBOOK" && format.type !== "LEAF_EDITION";
   const isLeafEdition = format.type === "LEAF_EDITION";
 
@@ -130,6 +131,11 @@ function FormatCard({
       const data = await res.json();
       if (res.ok) {
         setProcessed(true);
+        if (data.debug) {
+          setProcessInfo(
+            `${data.debug.sectionCount} sections, Gemini: ${data.debug.geminiEnabled ? "on" : "OFF"}`
+          );
+        }
       } else {
         setProcessError(data.error || `Processing failed (${res.status})`);
       }
@@ -402,6 +408,9 @@ function FormatCard({
               </div>
               {processError && (
                 <p className="text-xs text-red-600">{processError}</p>
+              )}
+              {processInfo && (
+                <p className="text-xs text-gray-500">{processInfo}</p>
               )}
             </div>
           )}

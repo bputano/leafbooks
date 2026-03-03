@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getPublicUrl } from "@/lib/storage";
 
+export const maxDuration = 300; // 5 minutes for Gemini formatting
+
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -53,7 +55,16 @@ export async function POST(
       select: { id: true, slug: true, heading: true, wordCount: true, isFree: true },
     });
 
-    return NextResponse.json({ sections });
+    const hasGemini = !!process.env.GEMINI_API_KEY;
+
+    return NextResponse.json({
+      sections,
+      debug: {
+        sectionCount: sections.length,
+        geminiEnabled: hasGemini,
+        fileType: book.manuscriptFileType,
+      },
+    });
   } catch (error) {
     console.error("Content processing failed:", error);
     const message = error instanceof Error ? error.message : "Processing failed";
