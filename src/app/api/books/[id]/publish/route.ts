@@ -56,19 +56,11 @@ export async function POST(
   }
 
   // Check if author has Stripe connected (required for paid sales)
-  const stripeConfigured = !!process.env.STRIPE_SECRET_KEY;
   const hasStripeAccount = !!author.stripeAccountId;
   let stripeWarning: string | null = null;
 
   if (!hasStripeAccount) {
-    if (stripeConfigured) {
-      // Stripe is configured but author hasn't connected — block publishing
-      return NextResponse.json(
-        { error: "Please connect your Stripe account before publishing" },
-        { status: 400 }
-      );
-    }
-    // Stripe not configured (local dev / demo) — allow with warning
+    // Allow publishing without Stripe — paid sales won't work until connected
     stripeWarning =
       "Publishing without Stripe. Paid sales will not work until Stripe is connected.";
   }

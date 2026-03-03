@@ -109,15 +109,15 @@ export function Launch({ wizard }: LaunchProps) {
       </div>
 
       <div className="rounded-lg bg-amber-50 p-4 text-sm text-amber-800">
-        <strong>Before you publish:</strong> Make sure you&apos;ve connected
-        your Stripe account in{" "}
+        <strong>Note:</strong> To accept paid orders, connect your Stripe
+        account in{" "}
         <a
           href="/settings/payments"
           className="font-medium underline"
         >
           Settings &rarr; Payments
-        </a>{" "}
-        to receive payouts.
+        </a>
+        . You can publish now and connect Stripe later.
       </div>
 
       <div className="flex gap-3">
