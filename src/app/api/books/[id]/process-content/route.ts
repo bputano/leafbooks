@@ -3,8 +3,6 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getPublicUrl } from "@/lib/storage";
 
-export const maxDuration = 60; // Vercel Hobby plan limit
-
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
