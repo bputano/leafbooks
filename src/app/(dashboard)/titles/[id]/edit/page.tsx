@@ -79,7 +79,7 @@ export default async function EditTitlePage({
             className="flex items-center gap-1.5 rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
           >
             <Eye className="h-4 w-4" />
-            Preview Reader
+            Open in Leaf Reader
           </Link>
         </div>
       )}

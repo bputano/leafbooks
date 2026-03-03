@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ExternalLink, Check } from "lucide-react";
+import { ExternalLink, Check, BookOpen } from "lucide-react";
 import type { Book } from "@/hooks/use-title-wizard";
 
 interface LaunchProps {
@@ -71,16 +71,31 @@ export function Launch({ wizard }: LaunchProps) {
           <p className="mt-2 text-sm text-gray-600">
             Your book is now available for purchase.
           </p>
-          {publishedUrl && (
-            <a
-              href={publishedUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-leaf-600 hover:text-leaf-700"
-            >
-              View your page <ExternalLink className="h-4 w-4" />
-            </a>
-          )}
+          <div className="mt-4 flex flex-col items-center gap-2">
+            {publishedUrl && (
+              <a
+                href={publishedUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-medium text-leaf-600 hover:text-leaf-700"
+              >
+                View your page <ExternalLink className="h-4 w-4" />
+              </a>
+            )}
+            {bookData.authorSlug && bookData.slug && (
+              <a
+                href={`/${bookData.authorSlug}/${bookData.slug}/read`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-medium text-leaf-600 hover:text-leaf-700"
+              >
+                Open in Leaf Reader <BookOpen className="h-4 w-4" />
+              </a>
+            )}
+          </div>
+          <p className="mt-3 text-xs text-gray-500">
+            Content processing may take a moment before the reader is ready.
+          </p>
         </div>
 
         <Button

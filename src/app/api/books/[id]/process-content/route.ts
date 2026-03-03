@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { processManuscript } from "@/lib/reader/content-pipeline";
 import { getPublicUrl } from "@/lib/storage";
 
 export async function POST(
@@ -40,6 +39,7 @@ export async function POST(
     : getPublicUrl(book.manuscriptFileUrl);
 
   try {
+    const { processManuscript } = await import("@/lib/reader/content-pipeline");
     await processManuscript(
       book.id,
       fileUrl,
