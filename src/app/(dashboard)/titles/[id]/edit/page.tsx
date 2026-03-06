@@ -2,12 +2,12 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAuthor } from "@/lib/auth/get-author";
 import { db } from "@/lib/db";
-import { Eye } from "lucide-react";
+import { Eye, ExternalLink, PenLine } from "lucide-react";
 import { WizardShell } from "@/components/dashboard/title-wizard/wizard-shell";
 import type { Book } from "@/hooks/use-title-wizard";
 
 export const metadata = {
-  title: "Edit Title — LeafBooks",
+  title: "Edit Title — Canopy",
 };
 
 export default async function EditTitlePage({
@@ -25,7 +25,9 @@ export default async function EditTitlePage({
 
   if (!book) notFound();
 
-  const readerUrl = book.status === "PUBLISHED" && book._count.sections > 0
+  const isPublished = book.status === "PUBLISHED";
+  const pageUrl = isPublished ? `/${author.slug}/${book.slug}` : null;
+  const readerUrl = isPublished && book._count.sections > 0
     ? `/${author.slug}/${book.slug}/read`
     : null;
 
@@ -49,6 +51,7 @@ export default async function EditTitlePage({
     isPreOrder: book.isPreOrder,
     status: book.status,
     authorSlug: author.slug,
+    giftLinksEnabled: book.giftLinksEnabled,
     formats: book.formats.map((f) => ({
       id: f.id,
       type: f.type as "HARDCOVER" | "PAPERBACK" | "EBOOK" | "LEAF_EDITION",
@@ -69,18 +72,39 @@ export default async function EditTitlePage({
 
   return (
     <div>
-      {readerUrl && (
+      {isPublished && (
         <div className="mb-6 flex items-center justify-between rounded-lg border border-leaf-200 bg-leaf-50 px-4 py-3">
           <span className="text-sm text-leaf-800">
-            Leaf Reader is live for this title.
+            This title is live.
           </span>
-          <Link
-            href={readerUrl}
-            className="flex items-center gap-1.5 rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
-          >
-            <Eye className="h-4 w-4" />
-            Open in Leaf Reader
-          </Link>
+          <div className="flex items-center gap-2">
+            {pageUrl && (
+              <Link
+                href={pageUrl}
+                target="_blank"
+                className="flex items-center gap-1.5 rounded-md border border-leaf-300 bg-white px-3 py-1.5 text-sm font-medium text-leaf-700 transition-colors hover:bg-leaf-50"
+              >
+                <ExternalLink className="h-4 w-4" />
+                View Page
+              </Link>
+            )}
+            <Link
+              href={`/titles/${book.id}/landing`}
+              className="flex items-center gap-1.5 rounded-md border border-leaf-300 bg-white px-3 py-1.5 text-sm font-medium text-leaf-700 transition-colors hover:bg-leaf-50"
+            >
+              <PenLine className="h-4 w-4" />
+              Edit Page
+            </Link>
+            {readerUrl && (
+              <Link
+                href={readerUrl}
+                className="flex items-center gap-1.5 rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
+              >
+                <Eye className="h-4 w-4" />
+                Leaf Reader
+              </Link>
+            )}
+          </div>
         </div>
       )}
       <WizardShell book={serializedBook} />

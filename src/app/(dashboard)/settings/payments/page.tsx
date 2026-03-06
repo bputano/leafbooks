@@ -3,7 +3,7 @@ import { getAccountStatus } from "@/lib/stripe/connect";
 import { StripeConnectSetup } from "@/components/dashboard/stripe-connect-banner";
 
 export const metadata = {
-  title: "Payments — LeafBooks",
+  title: "Payments — Canopy",
 };
 
 export default async function PaymentsPage() {

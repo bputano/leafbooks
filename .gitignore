@@ -45,5 +45,10 @@ prisma/*.db
 # design system internals
 .interface-design/
 
+# claude code / agent tooling
+.agents/
+.claude/
+skills-lock.json
+
 # data files
 *.csv

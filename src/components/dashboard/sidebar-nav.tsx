@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   BarChart3,
+  Users,
   Settings,
   CreditCard,
   LogOut,
@@ -14,6 +15,7 @@ import { signOut } from "next-auth/react";
 const navItems = [
   { href: "/titles", label: "Titles", icon: BookOpen },
   { href: "/sales", label: "Sales", icon: BarChart3 },
+  { href: "/readers", label: "Readers", icon: Users },
   { href: "/settings", label: "Settings", icon: Settings },
   {
     href: "/settings/payments",
@@ -29,7 +31,7 @@ export function SidebarNav() {
     <aside className="flex w-64 flex-col border-r border-gray-200 bg-white">
       <div className="flex h-16 items-center border-b border-gray-200 px-6">
         <Link href="/titles" className="text-xl font-bold text-leaf-700">
-          LeafBooks
+          Canopy
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4">

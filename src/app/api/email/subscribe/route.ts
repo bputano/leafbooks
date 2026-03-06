@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { handleReaderSubscribe } from "@/lib/readers";
 import { z } from "zod";
 
 const subscribeSchema = z.object({
@@ -39,6 +40,19 @@ export async function POST(req: NextRequest) {
     },
     update: {}, // Don't overwrite existing subscriber
   });
+
+  // Track in Reader database
+  try {
+    await handleReaderSubscribe({
+      authorId,
+      email,
+      name,
+      source: source || undefined,
+      sourceDetail: source || undefined,
+    });
+  } catch (error) {
+    console.error("Failed to track reader subscribe:", error);
+  }
 
   return NextResponse.json({ success: true });
 }

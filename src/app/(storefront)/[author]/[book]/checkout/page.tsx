@@ -8,7 +8,7 @@ interface CheckoutPageProps {
 }
 
 export const metadata = {
-  title: "Checkout — LeafBooks",
+  title: "Checkout — Canopy",
 };
 
 export default async function CheckoutPage({

@@ -17,7 +17,7 @@ export async function generateMetadata({
   if (!author) return {};
 
   return {
-    title: `${author.displayName} — LeafBooks`,
+    title: `${author.displayName} — Canopy`,
     description: author.bio || `Books by ${author.displayName}`,
   };
 }

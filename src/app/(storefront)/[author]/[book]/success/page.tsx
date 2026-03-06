@@ -1,7 +1,6 @@
-import Link from "next/link";
-import { Check, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react";
 import { db } from "@/lib/db";
+import { EnhancedSuccess } from "@/components/storefront/success/enhanced-success";
 
 interface SuccessPageProps {
   params: Promise<{ author: string; book: string }>;
@@ -9,7 +8,7 @@ interface SuccessPageProps {
 }
 
 export const metadata = {
-  title: "Order Confirmed — LeafBooks",
+  title: "Order Confirmed — Canopy",
 };
 
 export default async function SuccessPage({
@@ -19,9 +18,25 @@ export default async function SuccessPage({
   const { author: authorSlug, book: bookSlug } = await params;
   const { payment_intent: paymentIntentId } = await searchParams;
 
-  // Check if the purchase includes a digital format (Leaf Edition / Ebook)
+  // Look up the book
+  const author = await db.author.findUnique({ where: { slug: authorSlug } });
+  const book = author
+    ? await db.book.findFirst({
+        where: { authorId: author.id, slug: bookSlug },
+        select: {
+          id: true,
+          title: true,
+          coverImageUrl: true,
+          giftLinksEnabled: true,
+        },
+      })
+    : null;
+
+  // Check purchase details
   let readerAccessToken: string | null = null;
   let hasDigitalFormat = false;
+  let buyerEmail = "";
+  let buyerName: string | null = null;
 
   if (paymentIntentId) {
     const order = await db.order.findFirst({
@@ -29,61 +44,58 @@ export default async function SuccessPage({
       include: { bookFormat: true },
     });
 
-    if (order?.bookFormat) {
-      const isDigital =
-        order.bookFormat.type === "EBOOK" ||
-        order.bookFormat.type === "LEAF_EDITION";
+    if (order) {
+      buyerEmail = order.buyerEmail;
+      buyerName = order.buyerName;
 
-      if (isDigital && order.buyerEmail) {
-        hasDigitalFormat = true;
-        const access = await db.readerAccess.findFirst({
-          where: {
-            bookId: order.bookId,
-            buyerEmail: order.buyerEmail,
-          },
-        });
-        if (access) {
-          readerAccessToken = access.accessToken;
+      if (order.bookFormat) {
+        const isDigital =
+          order.bookFormat.type === "EBOOK" ||
+          order.bookFormat.type === "LEAF_EDITION";
+
+        if (isDigital && order.buyerEmail) {
+          hasDigitalFormat = true;
+          const access = await db.readerAccess.findFirst({
+            where: {
+              bookId: order.bookId,
+              buyerEmail: order.buyerEmail,
+            },
+          });
+          if (access) {
+            readerAccessToken = access.accessToken;
+          }
         }
       }
     }
   }
 
   return (
-    <div className="mx-auto max-w-lg px-6 py-16 text-center">
-      <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-        <Check className="h-8 w-8 text-green-600" />
+    <div className="mx-auto max-w-lg px-6 py-16">
+      <div className="mb-6 text-center">
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+          <Check className="h-8 w-8 text-green-600" />
+        </div>
+
+        <h1 className="text-2xl font-bold text-gray-900">Order Confirmed!</h1>
+        <p className="mt-2 text-gray-600">
+          Thank you for your purchase. You&apos;ll receive a confirmation email
+          shortly.
+        </p>
       </div>
 
-      <h1 className="text-2xl font-bold text-gray-900">Order Confirmed!</h1>
-      <p className="mt-2 text-gray-600">
-        Thank you for your purchase. You&apos;ll receive a confirmation email
-        shortly.
-      </p>
-
-      <div className="mt-8 space-y-3">
-        {hasDigitalFormat && readerAccessToken && (
-          <Link
-            href={`/${authorSlug}/${bookSlug}/read?token=${readerAccessToken}`}
-          >
-            <Button size="lg" className="w-full">
-              <BookOpen className="mr-2 h-5 w-5" />
-              Start Reading Now
-            </Button>
-          </Link>
-        )}
-
-        <Link href={`/${authorSlug}/${bookSlug}`}>
-          <Button variant="outline" className="w-full">
-            Back to Book Page
-          </Button>
-        </Link>
-        <Link href={`/${authorSlug}`}>
-          <Button variant="ghost" className="w-full">
-            Browse More Books
-          </Button>
-        </Link>
-      </div>
+      <EnhancedSuccess
+        authorSlug={authorSlug}
+        bookSlug={bookSlug}
+        bookTitle={book?.title || "this book"}
+        coverImageUrl={book?.coverImageUrl || null}
+        accessToken={readerAccessToken}
+        buyerEmail={buyerEmail}
+        buyerName={buyerName}
+        bookId={book?.id || ""}
+        giftLinksEnabled={book?.giftLinksEnabled ?? false}
+        paymentIntentId={paymentIntentId || ""}
+        hasDigitalFormat={hasDigitalFormat}
+      />
     </div>
   );
 }

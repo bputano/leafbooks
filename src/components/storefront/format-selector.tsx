@@ -50,7 +50,7 @@ export function FormatSelector({
                 : format.type === "PAPERBACK"
                   ? "Paperback"
                   : format.type === "LEAF_EDITION"
-                    ? "Serif Edition"
+                    ? "Leaf Edition"
                     : "Ebook"}
             </span>
             <span className="ml-2">${(format.price / 100).toFixed(2)}</span>

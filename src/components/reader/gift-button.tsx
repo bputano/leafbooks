@@ -62,7 +62,7 @@ export function GiftButton({ bookId, buyerEmail }: GiftButtonProps) {
           </button>
         </div>
         <p className="text-xs text-ink-muted">
-          Share this link to gift a free copy of the Serif Edition.
+          Share this link to gift a free copy of the Leaf Edition.
         </p>
       </div>
     );

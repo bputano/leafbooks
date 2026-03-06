@@ -2,7 +2,7 @@ import { getAuthor } from "@/lib/auth/get-author";
 import { db } from "@/lib/db";
 
 export const metadata = {
-  title: "Sales — LeafBooks",
+  title: "Sales — Canopy",
 };
 
 export default async function SalesPage() {

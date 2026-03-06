@@ -2,7 +2,7 @@ import { getAuthor } from "@/lib/auth/get-author";
 import { AuthorProfileForm } from "@/components/dashboard/author-profile-form";
 
 export const metadata = {
-  title: "Settings — LeafBooks",
+  title: "Settings — Canopy",
 };
 
 export default async function SettingsPage() {

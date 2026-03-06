@@ -6,7 +6,7 @@ import { FAQReview } from "@/components/dashboard/faq-review";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata = {
-  title: "Manage FAQs — LeafBooks",
+  title: "Manage FAQs — Canopy",
 };
 
 interface FAQPageProps {

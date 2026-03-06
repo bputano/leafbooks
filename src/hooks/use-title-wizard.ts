@@ -22,6 +22,7 @@ interface Book {
   isPreOrder: boolean;
   status: string;
   authorSlug: string | null;
+  giftLinksEnabled: boolean;
   formats: Format[];
 }
 

@@ -12,6 +12,7 @@ import { PreviewBanner } from "@/components/reader/preview-banner";
 import { ReaderNav } from "@/components/reader/reader-nav";
 import { ReadingProgress } from "@/components/reader/reading-progress";
 import { Paywall } from "@/components/reader/paywall";
+import { ProgressTracker } from "@/components/reader/progress-tracker";
 import type { Metadata } from "next";
 
 interface SectionPageProps {
@@ -192,6 +193,10 @@ export default async function SectionPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
+      {accessLevel === "full" && buyerEmail && (
+        <ProgressTracker bookId={book.id} sectionId={section.id} />
+      )}
 
       <ReadingProgress
         current={sectionIndex + 1}

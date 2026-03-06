@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { ReaderLayout } from "@/components/reader/reader-layout";
+import { checkReaderAccess } from "@/lib/reader/reader-auth";
 
 interface ReaderLayoutProps {
   params: Promise<{ author: string; book: string }>;
@@ -43,14 +44,20 @@ export default async function ReadLayout({
     wordCount: s.wordCount,
   }));
 
+  // Check reader access for gift button in header
+  const accessResult = await checkReaderAccess(book.id);
+
   return (
     <ReaderLayout
       bookTitle={book.title}
+      bookId={book.id}
       authorName={author.displayName}
       authorSlug={authorSlug}
       bookSlug={bookSlug}
       coverImageUrl={book.coverImageUrl}
       sections={sections}
+      giftLinksEnabled={book.giftLinksEnabled}
+      buyerEmail={accessResult.buyerEmail}
     >
       {children}
     </ReaderLayout>

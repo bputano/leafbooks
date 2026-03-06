@@ -51,7 +51,7 @@ export default async function OGImage({
             fontWeight: 600,
           }}
         >
-          LeafBooks
+          Canopy
         </div>
         <div
           style={{

@@ -30,7 +30,7 @@ export async function generateMetadata({
   if (!book) return {};
 
   return {
-    title: `${book.title} by ${author.displayName} — Serif`,
+    title: `${book.title} by ${author.displayName} — Canopy`,
     description: book.description || `${book.title} by ${author.displayName}`,
     openGraph: {
       title: book.title,

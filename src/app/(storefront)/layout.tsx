@@ -10,7 +10,7 @@ export default function StorefrontLayout({
       <header className="border-b border-ink/[0.06]">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <Link href="/" className="font-serif text-lg font-semibold tracking-tight text-ink">
-            Serif
+            Canopy
           </Link>
         </div>
       </header>
@@ -21,7 +21,7 @@ export default function StorefrontLayout({
           href="/"
           className="font-serif text-sm tracking-wide text-ink-muted transition-colors hover:text-ink-light"
         >
-          Serif
+          Canopy
         </Link>
       </footer>
     </div>

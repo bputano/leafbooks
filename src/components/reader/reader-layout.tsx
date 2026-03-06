@@ -6,6 +6,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Menu, Settings, X } from "lucide-react";
 import { TableOfContents } from "./table-of-contents";
 import { ShareButton } from "./share-button";
+import { GiftButton } from "./gift-button";
 
 interface Section {
   id: string;
@@ -18,11 +19,14 @@ interface Section {
 
 interface ReaderLayoutProps {
   bookTitle: string;
+  bookId?: string;
   authorName: string;
   authorSlug: string;
   bookSlug: string;
   coverImageUrl: string | null;
   sections: Section[];
+  giftLinksEnabled?: boolean;
+  buyerEmail?: string | null;
   children: React.ReactNode;
 }
 
@@ -36,11 +40,14 @@ const FONT_SIZES: Record<FontSize, string> = {
 
 export function ReaderLayout({
   bookTitle,
+  bookId,
   authorName,
   authorSlug,
   bookSlug,
   coverImageUrl,
   sections,
+  giftLinksEnabled,
+  buyerEmail,
   children,
 }: ReaderLayoutProps) {
   const pathname = usePathname();
@@ -91,6 +98,9 @@ export function ReaderLayout({
           </div>
 
           <div className="flex items-center gap-1">
+            {giftLinksEnabled && bookId && buyerEmail && (
+              <GiftButton bookId={bookId} buyerEmail={buyerEmail} />
+            )}
             <button
               onClick={() => setSettingsOpen(!settingsOpen)}
               className="rounded-md p-2 text-ink-muted transition-colors hover:bg-paper-warm hover:text-ink-light"

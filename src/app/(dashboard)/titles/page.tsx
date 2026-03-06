@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { getAuthor } from "@/lib/auth/get-author";
 import { db } from "@/lib/db";
-import { Plus, BookOpen, Edit, Eye } from "lucide-react";
+import { Plus, BookOpen, Edit, Eye, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const metadata = {
-  title: "Titles — LeafBooks",
+  title: "Titles — Canopy",
 };
 
 export default async function TitlesPage() {
@@ -50,12 +50,14 @@ export default async function TitlesPage() {
       ) : (
         <div className="mt-6 space-y-3">
           {books.map((book) => (
-            <Link
+            <div
               key={book.id}
-              href={`/titles/${book.id}/edit`}
-              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4 transition-colors hover:border-gray-300"
+              className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
             >
-              <div className="flex items-center gap-4">
+              <Link
+                href={`/titles/${book.id}/edit`}
+                className="flex flex-1 items-center gap-4 transition-colors hover:opacity-80"
+              >
                 {book.coverImageUrl ? (
                   <div className="h-16 w-11 overflow-hidden rounded bg-gray-100">
                     <img
@@ -88,20 +90,41 @@ export default async function TitlesPage() {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
               <div className="flex items-center gap-2">
-                {book.status === "PUBLISHED" && book._count.sections > 0 && (
-                  <Link
-                    href={`/${author.slug}/${book.slug}/read`}
-                    className="relative z-10 flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-                    Open Reader
-                  </Link>
+                {book.status === "PUBLISHED" && (
+                  <>
+                    <Link
+                      href={`/${author.slug}/${book.slug}`}
+                      target="_blank"
+                      className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      View Page
+                    </Link>
+                    <Link
+                      href={`/titles/${book.id}/landing`}
+                      className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                      Edit Page
+                    </Link>
+                    {book._count.sections > 0 && (
+                      <Link
+                        href={`/${author.slug}/${book.slug}/read`}
+                        className="flex items-center gap-1 rounded-md border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:border-leaf-300 hover:bg-leaf-50 hover:text-leaf-700"
+                      >
+                        <Eye className="h-3.5 w-3.5" />
+                        Reader
+                      </Link>
+                    )}
+                  </>
                 )}
-                <Edit className="h-4 w-4 text-gray-400" />
+                <Link href={`/titles/${book.id}/edit`}>
+                  <Edit className="h-4 w-4 text-gray-400" />
+                </Link>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}

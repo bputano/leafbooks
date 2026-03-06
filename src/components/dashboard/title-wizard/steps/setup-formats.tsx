@@ -538,6 +538,48 @@ export function SetupFormats({ wizard }: SetupFormatsProps) {
         </div>
       )}
 
+      {/* Gift links toggle */}
+      <div className="rounded-lg border border-gray-200 bg-white p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-gray-900">Gift Links</h3>
+            <p className="text-xs text-gray-500">
+              Allow buyers to gift a free copy of this book to a friend.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={bookData.giftLinksEnabled ?? true}
+            onClick={() => {
+              const newValue = !(bookData.giftLinksEnabled ?? true);
+              wizard.setBookData((prev) => ({
+                ...prev,
+                giftLinksEnabled: newValue,
+              }));
+              fetch(`/api/books/${bookData.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ giftLinksEnabled: newValue }),
+              });
+            }}
+            className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+              (bookData.giftLinksEnabled ?? true)
+                ? "bg-leaf-600"
+                : "bg-gray-200"
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform ${
+                (bookData.giftLinksEnabled ?? true)
+                  ? "translate-x-5"
+                  : "translate-x-0"
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
       <div className="flex gap-3">
         <Button variant="outline" onClick={wizard.prevStep}>
           Back

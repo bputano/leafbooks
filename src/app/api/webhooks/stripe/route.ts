@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { luluProvider } from "@/lib/fulfillment/lulu-provider";
 import { getPublicUrl } from "@/lib/storage";
 import { grantAccess } from "@/lib/reader/access";
+import { handleReaderPurchase } from "@/lib/readers";
 import type Stripe from "stripe";
 
 export async function POST(req: NextRequest) {
@@ -90,6 +91,23 @@ async function handlePaymentSuccess(paymentIntent: Stripe.PaymentIntent) {
       },
       update: {}, // Don't overwrite existing subscriber data
     });
+  }
+
+  // Track reader
+  if (buyerEmail && authorId) {
+    try {
+      await handleReaderPurchase({
+        authorId,
+        email: buyerEmail,
+        name: buyerName || null,
+        orderId: order.id,
+        bookId,
+        amount: paymentIntent.amount,
+        formatType: formatType || "PRINT",
+      });
+    } catch (error) {
+      console.error("Failed to track reader:", error);
+    }
   }
 
   // Grant reader access for digital formats

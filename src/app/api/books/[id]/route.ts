@@ -19,6 +19,7 @@ const updateBookSchema = z.object({
   launchDate: z.string().nullish(),
   preOrderDate: z.string().nullish(),
   isPreOrder: z.boolean().optional(),
+  giftLinksEnabled: z.boolean().optional(),
 });
 
 async function getAuthorBook(bookId: string, userId: string) {

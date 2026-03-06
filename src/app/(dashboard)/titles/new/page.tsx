@@ -3,7 +3,7 @@ import { getAuthor } from "@/lib/auth/get-author";
 import { db } from "@/lib/db";
 
 export const metadata = {
-  title: "New Title — LeafBooks",
+  title: "New Title — Canopy",
 };
 
 export default async function NewTitlePage() {

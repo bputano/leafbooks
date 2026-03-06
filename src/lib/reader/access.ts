@@ -1,5 +1,6 @@
 import { randomBytes } from "crypto";
 import { db } from "@/lib/db";
+import { handleReaderGift } from "@/lib/readers";
 
 /**
  * Grant reader access to a book for a buyer.
@@ -118,6 +119,24 @@ export async function redeemGiftLink(
       giftedBy: gift.createdBy,
     },
   });
+
+  // Track in Reader database
+  try {
+    const book = await db.book.findUnique({
+      where: { id: gift.bookId },
+      select: { authorId: true },
+    });
+    if (book) {
+      await handleReaderGift({
+        authorId: book.authorId,
+        email: claimerEmail,
+        bookId: gift.bookId,
+        giftedBy: gift.createdBy,
+      });
+    }
+  } catch (error) {
+    console.error("Failed to track reader gift:", error);
+  }
 
   return { bookId: gift.bookId, accessToken };
 }

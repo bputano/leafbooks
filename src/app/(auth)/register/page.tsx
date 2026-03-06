@@ -1,7 +1,7 @@
 import { RegisterForm } from "@/components/auth/register-form";
 
 export const metadata = {
-  title: "Create Account — LeafBooks",
+  title: "Create Account — Canopy",
 };
 
 export default function RegisterPage() {

@@ -80,6 +80,7 @@ model Author {
   books            Book[]
   emailSubscribers EmailSubscriber[]
   crossPromotions  CrossPromotion[]
+  readers          Reader[]
 }
 
 enum SubscriptionTier {
@@ -127,6 +128,9 @@ model Book {
   preOrderDate      DateTime?
   isPreOrder        Boolean    @default(false)
 
+  // Gift control
+  giftLinksEnabled  Boolean    @default(true)
+
   author          Author          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   orders          Order[]
   categories      BookCategory[]
@@ -135,6 +139,8 @@ model Book {
   sections        BookSection[]
   readerAccess    ReaderAccess[]
   giftLinks       GiftLink[]
+  readerEvents    ReaderEvent[]
+  readingProgress ReadingProgress[]
 
   @@unique([authorId, slug])
 }
@@ -204,6 +210,7 @@ model Order {
   id              String      @id @default(cuid())
   bookId          String
   bookFormatId    String?
+  readerId        String?
   buyerEmail      String
   buyerName       String?
   amount          Int         // in cents
@@ -219,6 +226,7 @@ model Order {
 
   book       Book        @relation(fields: [bookId], references: [id])
   bookFormat BookFormat? @relation(fields: [bookFormatId], references: [id])
+  reader     Reader?     @relation(fields: [readerId], references: [id], onDelete: SetNull)
 }
 
 enum OrderStatus {
@@ -248,6 +256,80 @@ model EmailSubscriber {
   author Author @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
   @@unique([authorId, email])
+}
+
+// ─── Readers ────────────────────────────────────────────
+
+model Reader {
+  id            String       @id @default(cuid())
+  authorId      String
+  email         String
+  name          String?
+  phone         String?
+  source        ReaderSource @default(EMAIL_SIGNUP)
+  sourceDetail  String?      // which book page, campaign, etc.
+  status        ReaderStatus @default(SUBSCRIBER)
+  tags          String[]     // flexible segmentation
+  notes         String?      // author's private notes
+  totalSpent    Int          @default(0) // cents, denormalized
+  orderCount    Int          @default(0) // denormalized
+  firstSeenAt   DateTime     @default(now())
+  lastActiveAt  DateTime     @default(now())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  // Canopy unified session (shared across all Reader records for same email)
+  sessionToken      String?   @unique
+  sessionExpiresAt  DateTime?
+
+  author Author        @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  events ReaderEvent[]
+  orders Order[]
+
+  @@unique([authorId, email])
+  @@index([authorId, status])
+  @@index([authorId, lastActiveAt])
+}
+
+enum ReaderSource {
+  PURCHASE
+  SAMPLE_REQUEST
+  EMAIL_SIGNUP
+  GIFT
+  REFERRAL
+  MANUAL
+}
+
+enum ReaderStatus {
+  SUBSCRIBER
+  SAMPLE
+  CUSTOMER
+  VIP
+  CHURNED
+}
+
+model ReaderEvent {
+  id        String          @id @default(cuid())
+  readerId  String
+  type      ReaderEventType
+  bookId    String?
+  metadata  Json?           // flexible payload (amount, format, referral source, etc.)
+  createdAt DateTime        @default(now())
+
+  reader Reader @relation(fields: [readerId], references: [id], onDelete: Cascade)
+  book   Book?  @relation(fields: [bookId], references: [id], onDelete: SetNull)
+
+  @@index([readerId, createdAt])
+  @@index([bookId])
+}
+
+enum ReaderEventType {
+  SUBSCRIBED
+  SAMPLE_REQUESTED
+  PURCHASED
+  GIFT_RECEIVED
+  GIFT_SENT
+  REFUNDED
 }
 
 // ─── Cross-Promotion ─────────────────────────────────────
@@ -371,4 +453,29 @@ model GiftLink {
   createdAt  DateTime  @default(now())
 
   @@unique([bookId, createdBy])
+}
+
+// ─── Canopy Reader Platform ─────────────────────────────
+
+model MagicLink {
+  id        String    @id @default(cuid())
+  email     String
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([token])
+}
+
+model ReadingProgress {
+  id            String   @id @default(cuid())
+  readerEmail   String
+  bookId        String
+  lastSectionId String
+  lastReadAt    DateTime @default(now())
+
+  book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([readerEmail, bookId])
 }

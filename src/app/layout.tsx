@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "Serif — Direct Sales for Authors",
+  title: "Canopy — Direct Sales for Authors",
   description:
     "Sell your books directly to readers. Own your audience. Keep more of what you earn.",
 };
