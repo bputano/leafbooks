@@ -50,8 +50,9 @@ const WIZARD_STEPS = [
   { id: 2, label: "Upload Files" },
   { id: 3, label: "Title Details" },
   { id: 4, label: "Set up Formats" },
-  { id: 5, label: "Review" },
-  { id: 6, label: "Launch" },
+  { id: 5, label: "Bundles" },
+  { id: 6, label: "Review" },
+  { id: 7, label: "Launch" },
 ];
 
 export { WIZARD_STEPS };

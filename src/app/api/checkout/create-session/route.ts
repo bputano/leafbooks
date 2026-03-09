@@ -7,6 +7,7 @@ import { z } from "zod";
 const checkoutSchema = z.object({
   bookId: z.string(),
   formatId: z.string(),
+  bundleId: z.string().optional(),
   buyerEmail: z.string().email(),
   buyerName: z.string().optional(),
   shippingAddress: z
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { bookId, formatId, buyerEmail, buyerName, shippingAddress } =
+  const { bookId, formatId, bundleId, buyerEmail, buyerName, shippingAddress } =
     parsed.data;
 
   // Load book, format, and author
@@ -67,17 +68,28 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  // If bundle, look up bundle price
+  let chargeAmount = format.price;
+  let chargeCurrency = format.currency;
+  if (bundleId) {
+    const bundle = await db.bundle.findFirst({
+      where: { id: bundleId, bookId, isActive: true },
+    });
+    if (bundle) {
+      chargeAmount = bundle.price;
+      chargeCurrency = bundle.currency;
+    }
+  }
+
   // Calculate fees
   const feeRate =
     PLATFORM_FEES[author.subscriptionTier as keyof typeof PLATFORM_FEES] ?? 0.2;
-  const applicationFee = Math.round(format.price * feeRate);
+  const applicationFee = Math.round(chargeAmount * feeRate);
 
   // Create PaymentIntent with destination charge
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: format.price,
-    currency: format.currency.toLowerCase(),
+    amount: chargeAmount,
+    currency: chargeCurrency.toLowerCase(),
     application_fee_amount: applicationFee,
     transfer_data: {
       destination: author.stripeAccountId,
@@ -86,6 +98,7 @@ export async function POST(req: NextRequest) {
     metadata: {
       bookId,
       formatId,
+      bundleId: bundleId || "",
       buyerEmail,
       buyerName: buyerName || "",
       authorId: author.id,
@@ -111,7 +124,7 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     clientSecret: paymentIntent.client_secret,
-    amount: format.price,
-    currency: format.currency,
+    amount: chargeAmount,
+    currency: chargeCurrency,
   });
 }

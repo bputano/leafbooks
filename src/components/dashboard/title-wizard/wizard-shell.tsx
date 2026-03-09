@@ -6,6 +6,7 @@ import { StepSidebar } from "./step-sidebar";
 import { UploadFiles } from "./steps/upload-files";
 import { TitleDetails } from "./steps/title-details";
 import { SetupFormats } from "./steps/setup-formats";
+import { Bundles } from "./steps/bundles";
 import { Review } from "./steps/review";
 import { Launch } from "./steps/launch";
 import type { Book } from "@/hooks/use-title-wizard";
@@ -35,8 +36,10 @@ function WizardContent({ book }: WizardShellProps) {
       case 4:
         return <SetupFormats wizard={wizard} />;
       case 5:
-        return <Review wizard={wizard} />;
+        return <Bundles wizard={wizard} />;
       case 6:
+        return <Review wizard={wizard} />;
+      case 7:
         return <Launch wizard={wizard} />;
       default:
         return <UploadFiles wizard={wizard} />;

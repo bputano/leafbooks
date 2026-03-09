@@ -52,6 +52,18 @@ export default async function BookPage({ params }: BookPageProps) {
     where: { authorId: author.id, slug: bookSlug, status: "PUBLISHED" },
     include: {
       formats: { where: { isActive: true } },
+      bundles: {
+        where: { isActive: true },
+        include: {
+          items: {
+            include: {
+              bookFormat: true,
+              bonusMaterial: true,
+            },
+          },
+        },
+        orderBy: { order: "asc" },
+      },
       sections: {
         where: { isFree: true },
         take: 1,
@@ -132,6 +144,17 @@ export default async function BookPage({ params }: BookPageProps) {
               price: f.price,
               currency: f.currency,
               isActive: f.isActive,
+            }))}
+            bundles={book.bundles.map((b) => ({
+              id: b.id,
+              name: b.name,
+              description: b.description,
+              price: b.price,
+              currency: b.currency,
+              items: b.items.map((i) => ({
+                formatType: i.bookFormat?.type || null,
+                bonusTitle: i.bonusMaterial?.title || null,
+              })),
             }))}
             bookSlug={book.slug}
             authorSlug={authorSlug}

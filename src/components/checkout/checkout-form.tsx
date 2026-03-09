@@ -22,6 +22,8 @@ interface CheckoutFormProps {
   price: number;
   currency: string;
   bookTitle: string;
+  bundleId?: string;
+  bundleName?: string;
 }
 
 function PaymentForm({
@@ -91,6 +93,8 @@ export function CheckoutForm({
   price,
   currency,
   bookTitle,
+  bundleId,
+  bundleName,
 }: CheckoutFormProps) {
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +125,7 @@ export function CheckoutForm({
           formatId,
           buyerEmail: email,
           buyerName: name,
+          ...(bundleId ? { bundleId } : {}),
           ...(isPrint ? { shippingAddress: shipping } : {}),
         }),
       });
