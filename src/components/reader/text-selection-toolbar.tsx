@@ -7,6 +7,7 @@ import {
   Copy,
   Check,
   Twitter,
+  Link as LinkIcon,
 } from "lucide-react";
 import type { TextSelectionInfo } from "@/hooks/use-text-selection";
 
@@ -16,6 +17,7 @@ interface TextSelectionToolbarProps {
   bookId: string;
   buyerEmail: string;
   sectionUrl: string;
+  previewUrl?: string;
   bookTitle: string;
   onHighlight: (color: string) => void;
   onNote: () => void;
@@ -35,6 +37,7 @@ export function TextSelectionToolbar({
   bookId,
   buyerEmail,
   sectionUrl,
+  previewUrl,
   bookTitle,
   onHighlight,
   onNote,
@@ -42,6 +45,7 @@ export function TextSelectionToolbar({
 }: TextSelectionToolbarProps) {
   const [showColors, setShowColors] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [shared, setShared] = useState(false);
 
   const top = selection.rect.top - 48;
   const left = selection.rect.left + selection.rect.width / 2;
@@ -137,6 +141,29 @@ export function TextSelectionToolbar({
               <Copy className="h-4 w-4" />
             )}
           </button>
+          {previewUrl && (
+            <button
+              onClick={async () => {
+                try {
+                  const fullUrl = `${window.location.origin}${previewUrl}`;
+                  await navigator.clipboard.writeText(fullUrl);
+                  setShared(true);
+                  setTimeout(() => {
+                    setShared(false);
+                    onClear();
+                  }, 1500);
+                } catch {}
+              }}
+              className="rounded p-1.5 text-ink-light hover:bg-paper-warm hover:text-ink"
+              title="Share section (free preview link)"
+            >
+              {shared ? (
+                <Check className="h-4 w-4 text-serif-success" />
+              ) : (
+                <LinkIcon className="h-4 w-4" />
+              )}
+            </button>
+          )}
           <div className="mx-0.5 h-5 w-px bg-ink/[0.08]" />
           <button
             onClick={handleShareTwitter}

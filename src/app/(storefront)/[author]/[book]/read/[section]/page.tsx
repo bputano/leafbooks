@@ -217,6 +217,7 @@ export default async function SectionPage({
           bookId={book.id}
           buyerEmail={buyerEmail}
           sectionUrl={sectionPath}
+          previewUrl={previewUrl}
           bookTitle={book.title}
         />
 

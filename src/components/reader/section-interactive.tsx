@@ -21,6 +21,7 @@ interface SectionInteractiveProps {
   bookId: string;
   buyerEmail: string | null;
   sectionUrl: string;
+  previewUrl?: string;
   bookTitle: string;
 }
 
@@ -30,6 +31,7 @@ export function SectionInteractive({
   bookId,
   buyerEmail,
   sectionUrl,
+  previewUrl,
   bookTitle,
 }: SectionInteractiveProps) {
   const { selection, clearSelection } = useTextSelection(sectionId);
@@ -142,7 +144,7 @@ export function SectionInteractive({
 
   return (
     <>
-      <SectionContent html={html} sectionId={sectionId} />
+      <SectionContent html={html} sectionId={sectionId} previewUrl={previewUrl} />
 
       <HighlightRenderer sectionId={sectionId} highlights={highlights} />
 
@@ -153,6 +155,7 @@ export function SectionInteractive({
           bookId={bookId}
           buyerEmail={buyerEmail ?? ""}
           sectionUrl={sectionUrl}
+          previewUrl={previewUrl}
           bookTitle={bookTitle}
           onHighlight={handleHighlight}
           onNote={handleNote}

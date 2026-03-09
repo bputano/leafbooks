@@ -6,7 +6,6 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Menu, Settings, X } from "lucide-react";
 import { TableOfContents } from "./table-of-contents";
 import { ShareButton } from "./share-button";
-import { GiftButton } from "./gift-button";
 import { ReferralCard } from "./referral-card";
 
 interface Section {
@@ -101,9 +100,6 @@ export function ReaderLayout({
           </div>
 
           <div className="flex items-center gap-1">
-            {giftLinksEnabled && bookId && buyerEmail && (
-              <GiftButton bookId={bookId} buyerEmail={buyerEmail} />
-            )}
             <button
               onClick={() => setSettingsOpen(!settingsOpen)}
               className="rounded-md p-2 text-ink-muted transition-colors hover:bg-paper-warm hover:text-ink-light"
@@ -142,14 +138,15 @@ export function ReaderLayout({
           </div>
         )}
 
-        {/* Referral sharing — always visible */}
-        {bookId && authorId && buyerEmail && (
+        {/* Referral & gift sharing — always visible */}
+        {bookId && buyerEmail && (
           <ReferralCard
             bookId={bookId}
-            authorId={authorId}
+            authorId={authorId || ""}
             buyerEmail={buyerEmail}
             authorSlug={authorSlug}
             bookSlug={bookSlug}
+            giftLinksEnabled={giftLinksEnabled}
           />
         )}
       </header>

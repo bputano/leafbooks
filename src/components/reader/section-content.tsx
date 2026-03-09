@@ -5,6 +5,7 @@ import { memo, useEffect, useRef } from "react";
 interface SectionContentProps {
   html: string;
   sectionId: string;
+  previewUrl?: string;
 }
 
 function slugify(text: string): string {
@@ -16,7 +17,11 @@ function slugify(text: string): string {
     .trim();
 }
 
-export const SectionContent = memo(function SectionContent({ html, sectionId }: SectionContentProps) {
+export const SectionContent = memo(function SectionContent({
+  html,
+  sectionId,
+  previewUrl,
+}: SectionContentProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,24 +36,37 @@ export const SectionContent = memo(function SectionContent({ html, sectionId }: 
       const id = slugify(text);
       heading.id = id;
 
-      const anchor = document.createElement("a");
-      anchor.href = `#${id}`;
-      anchor.dataset.headingAnchor = "";
-      anchor.className =
-        "ml-2 inline-flex opacity-0 group-hover/heading:opacity-100 hover:opacity-100 text-gray-400 hover:text-gray-600 transition-opacity";
-      anchor.innerHTML =
-        '<svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
-      anchor.setAttribute("aria-label", `Link to ${text}`);
-      anchor.addEventListener("click", (e) => {
+      heading.classList.add("group/heading");
+
+      // Share button — copies a free preview link for this section
+      const shareBtn = document.createElement("button");
+      shareBtn.dataset.headingAnchor = "";
+      shareBtn.className =
+        "ml-2 inline-flex items-center gap-1 opacity-0 group-hover/heading:opacity-100 hover:opacity-100 text-ink-muted hover:text-leaf-600 transition-all text-xs font-sans";
+      shareBtn.innerHTML =
+        '<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+        '<span class="share-label">Share</span>';
+      shareBtn.setAttribute("aria-label", `Share link to ${text}`);
+      shareBtn.addEventListener("click", async (e) => {
         e.preventDefault();
-        history.replaceState(null, "", `#${id}`);
-        heading.scrollIntoView({ behavior: "smooth" });
+        const url = previewUrl
+          ? `${window.location.origin}${previewUrl}#${id}`
+          : `${window.location.href.split("#")[0]}#${id}`;
+        try {
+          await navigator.clipboard.writeText(url);
+          const label = shareBtn.querySelector(".share-label");
+          if (label) {
+            label.textContent = "Copied!";
+            setTimeout(() => {
+              label.textContent = "Share";
+            }, 1500);
+          }
+        } catch {}
       });
 
-      heading.classList.add("group/heading");
-      heading.appendChild(anchor);
+      heading.appendChild(shareBtn);
     });
-  }, [html]);
+  }, [html, previewUrl]);
 
   return (
     <div
