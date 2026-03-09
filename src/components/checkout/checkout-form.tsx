@@ -138,6 +138,21 @@ export function CheckoutForm({
 
       setClientSecret(data.clientSecret);
       setStep("payment");
+
+      // Convert referral if ref cookie exists
+      const refMatch = document.cookie.match(/canopy_ref=([^;]+)/);
+      if (refMatch) {
+        fetch("/api/referrals/convert", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            referralCode: refMatch[1],
+            referredEmail: email,
+          }),
+        }).catch(() => {});
+        // Clear the cookie
+        document.cookie = "canopy_ref=; path=/; max-age=0";
+      }
     } catch {
       setError("Failed to initialize checkout");
     }

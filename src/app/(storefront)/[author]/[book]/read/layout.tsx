@@ -51,6 +51,7 @@ export default async function ReadLayout({
     <ReaderLayout
       bookTitle={book.title}
       bookId={book.id}
+      authorId={author.id}
       authorName={author.displayName}
       authorSlug={authorSlug}
       bookSlug={bookSlug}

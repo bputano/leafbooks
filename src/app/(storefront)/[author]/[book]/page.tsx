@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { getPublicUrl } from "@/lib/storage";
 import { FormatSelector } from "@/components/storefront/format-selector";
 import { EmailCapture } from "@/components/storefront/email-capture";
+import { ReferralTracker } from "@/components/storefront/referral-tracker";
 import { BookOpen } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -77,6 +78,7 @@ export default async function BookPage({ params }: BookPageProps) {
 
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
+      <ReferralTracker />
       <div className="grid gap-16 md:grid-cols-[280px_1fr]">
         {/* Cover — the hero. Warm shadow gives it physical presence. */}
         <div>

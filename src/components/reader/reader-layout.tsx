@@ -7,6 +7,7 @@ import { Menu, Settings, X } from "lucide-react";
 import { TableOfContents } from "./table-of-contents";
 import { ShareButton } from "./share-button";
 import { GiftButton } from "./gift-button";
+import { ReferralCard } from "./referral-card";
 
 interface Section {
   id: string;
@@ -20,6 +21,7 @@ interface Section {
 interface ReaderLayoutProps {
   bookTitle: string;
   bookId?: string;
+  authorId?: string;
   authorName: string;
   authorSlug: string;
   bookSlug: string;
@@ -41,6 +43,7 @@ const FONT_SIZES: Record<FontSize, string> = {
 export function ReaderLayout({
   bookTitle,
   bookId,
+  authorId,
   authorName,
   authorSlug,
   bookSlug,
@@ -137,6 +140,17 @@ export function ReaderLayout({
               </div>
             </div>
           </div>
+        )}
+
+        {/* Referral sharing — always visible */}
+        {bookId && authorId && buyerEmail && (
+          <ReferralCard
+            bookId={bookId}
+            authorId={authorId}
+            buyerEmail={buyerEmail}
+            authorSlug={authorSlug}
+            bookSlug={bookSlug}
+          />
         )}
       </header>
 

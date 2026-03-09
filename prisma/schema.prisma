@@ -76,12 +76,17 @@ model Author {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
+  referralEnabled     Boolean          @default(true)
+
   user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   books            Book[]
   emailSubscribers EmailSubscriber[]
   crossPromotions  CrossPromotion[]
   readers          Reader[]
   bonusMaterials   BonusMaterial[]
+  referralTiers    ReferralTier[]
+  referrals        Referral[]
+  referralRewards  ReferralReward[]
 }
 
 enum SubscriptionTier {
@@ -143,6 +148,7 @@ model Book {
   readerEvents    ReaderEvent[]
   readingProgress ReadingProgress[]
   bundles         Bundle[]
+  referrals       Referral[]
 
   @@unique([authorId, slug])
 }
@@ -473,8 +479,9 @@ model BonusMaterial {
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  author      Author            @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  bundleItems BundleItem[]
+  author        Author            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  bundleItems   BundleItem[]
+  referralTiers ReferralTier[]
 
   @@index([authorId])
 }
@@ -545,4 +552,85 @@ model ReadingProgress {
   book          Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@unique([readerEmail, bookId])
+}
+
+// ─── Referral Program ──────────────────────────────────
+
+model ReferralTier {
+  id              String     @id @default(cuid())
+  authorId        String
+  referralsNeeded Int        // e.g., 1, 3, 5
+  rewardType      RewardType
+  discountPct     Int?       // if DISCOUNT: percentage off
+  bonusMaterialId String?    // if BONUS_MATERIAL: link to BonusMaterial
+  customTitle     String?    // if CUSTOM: e.g., "Free coaching call"
+  customDescription String? // if CUSTOM: fulfillment details
+  order           Int        @default(0)
+  createdAt       DateTime   @default(now())
+
+  author          Author          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  bonusMaterial   BonusMaterial?  @relation(fields: [bonusMaterialId], references: [id])
+  rewards         ReferralReward[]
+
+  @@index([authorId])
+}
+
+enum RewardType {
+  DISCOUNT
+  BONUS_MATERIAL
+  CUSTOM
+}
+
+model Referral {
+  id              String          @id @default(cuid())
+  authorId        String
+  bookId          String
+  referrerEmail   String
+  referredEmail   String?
+  referralCode    String          @unique
+  source          ReferralSource
+  status          ReferralStatus  @default(PENDING)
+  giftLinkId      String?
+  clickCount      Int             @default(0)
+  convertedAt     DateTime?
+  createdAt       DateTime        @default(now())
+
+  author          Author    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  book            Book      @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([referrerEmail])
+  @@index([referralCode])
+  @@index([authorId, referrerEmail])
+}
+
+enum ReferralSource {
+  LINK
+  GIFT
+}
+
+enum ReferralStatus {
+  PENDING
+  CLICKED
+  CONVERTED
+  EXPIRED
+}
+
+model ReferralReward {
+  id              String       @id @default(cuid())
+  authorId        String
+  referrerEmail   String
+  tierId          String
+  status          RewardStatus @default(EARNED)
+  fulfilledAt     DateTime?
+  createdAt       DateTime     @default(now())
+
+  author          Author       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  tier            ReferralTier @relation(fields: [tierId], references: [id], onDelete: Cascade)
+
+  @@index([authorId, referrerEmail])
+}
+
+enum RewardStatus {
+  EARNED
+  FULFILLED
 }

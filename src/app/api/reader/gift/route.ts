@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { createGiftLink } from "@/lib/reader/access";
+import { randomBytes } from "crypto";
 import { z } from "zod";
 
 const createGiftSchema = z.object({
@@ -42,6 +43,30 @@ export async function POST(req: NextRequest) {
 
   try {
     const { token } = await createGiftLink(bookId, buyerEmail);
+
+    // Also create a referral record for the gift
+    const book = await db.book.findUnique({
+      where: { id: bookId },
+      select: { authorId: true, author: { select: { referralEnabled: true } } },
+    });
+    if (book?.author.referralEnabled) {
+      const existingRef = await db.referral.findFirst({
+        where: { bookId, referrerEmail: buyerEmail, source: "GIFT" },
+      });
+      if (!existingRef) {
+        await db.referral.create({
+          data: {
+            authorId: book.authorId,
+            bookId,
+            referrerEmail: buyerEmail,
+            referralCode: randomBytes(6).toString("hex"),
+            source: "GIFT",
+            giftLinkId: token,
+          },
+        });
+      }
+    }
+
     return NextResponse.json({ token });
   } catch (error) {
     return NextResponse.json(

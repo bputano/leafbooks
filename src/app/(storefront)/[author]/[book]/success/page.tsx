@@ -95,6 +95,7 @@ export default async function SuccessPage({
         giftLinksEnabled={book?.giftLinksEnabled ?? false}
         paymentIntentId={paymentIntentId || ""}
         hasDigitalFormat={hasDigitalFormat}
+        authorId={author?.id}
       />
     </div>
   );
