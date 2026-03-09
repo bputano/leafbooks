@@ -27,7 +27,7 @@ const navItems = [
     label: "Grow",
     icon: Sprout,
     children: [
-      { href: "/grow", label: "Email Subscribers", icon: Mail },
+      { href: "/grow", label: "Email Marketing", icon: Mail },
       { href: "/grow/referrals", label: "Referrals", icon: Users },
       { href: "/grow/affiliates", label: "Affiliates", icon: Handshake },
       { href: "/grow/cross-promote", label: "Cross-Promote", icon: ArrowLeftRight },
