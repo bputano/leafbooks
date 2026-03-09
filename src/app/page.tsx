@@ -72,7 +72,7 @@ export default function HomePage() {
               MailerLite + Squarespace — spending more time on integrations
               than on writing and marketing.
             </p>
-            <p className="mt-4 font-medium text-ink">
+            <p className="mx-auto mt-6 max-w-xl border-l-2 border-ink py-2 pl-5 text-left font-serif text-lg font-semibold text-ink">
               Canopy is one place to publish, sell, own your audience, and grow
               your readership.
             </p>
@@ -101,8 +101,8 @@ export default function HomePage() {
               />
               <FeatureCard
                 icon={<Package className="h-5 w-5" />}
-                title="All formats, one place"
-                description="Sell hardcover, paperback, ebook, and the Canopy Reader edition — all from a single listing. More formats means more ways to buy."
+                title="More formats, more bundles"
+                description="Sell hardcover, paperback, ebook, and the Canopy Reader edition — then bundle them with workbooks, courses, and bonus materials to increase your revenue per reader."
               />
               <FeatureCard
                 icon={<Mail className="h-5 w-5" />}
@@ -175,9 +175,9 @@ export default function HomePage() {
                 description="Every section of your Canopy Reader is indexed for search engines and AI answer engines. Your book is discoverable through the ideas inside it."
               />
               <FeatureCard
-                icon={<Globe className="h-5 w-5" />}
-                title="Wide distribution"
-                description="Opt into distribution to Amazon, bookstores, and libraries through Lulu's global network — while keeping direct sales as your primary channel."
+                icon={<Users className="h-5 w-5" />}
+                title="Author cross-promotion"
+                description="Team up with other Canopy authors to recommend each other's books — a built-in, community-powered discovery network that grows with the platform."
               />
             </div>
           </div>
@@ -196,16 +196,16 @@ export default function HomePage() {
 
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               <InfraCard
-                title="Print-on-demand"
-                description="Physical books produced and shipped via Lulu's global network. No inventory, no upfront costs."
+                title="Direct sales"
+                description="Sell from your own book page with built-in checkout. You own the customer relationship, the data, and the revenue."
               />
               <InfraCard
                 title="Canopy Reader"
                 description="A web-based reading experience with highlights, notes, and sharing. Mobile-ready and SEO-indexed."
               />
               <InfraCard
-                title="Author library"
-                description="Each author gets a profile page showcasing all their books — their home base on Canopy."
+                title="Global distribution"
+                description="Opt into distribution to Amazon, bookstores, and libraries through Lulu's global network — while keeping direct sales as your primary channel."
               />
               <InfraCard
                 title="Sales analytics"
