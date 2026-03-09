@@ -1,12 +1,14 @@
 # Canopy — Handoff Document
 
-**Last updated:** March 6, 2026
+**Last updated:** March 9, 2026
 
 ## What Is Canopy
 
 The self-publishing platform built for growth. Authors sign up, upload manuscripts, set up book formats (hardcover, paperback, ebook, Leaf Edition), and sell directly to readers through their own landing pages. Readers get a personal library, a beautiful web reader, and frictionless purchasing.
 
 Canopy takes a 15% platform fee on the free tier (on top of print and transaction costs). Paid subscription tiers reduce or eliminate the royalty.
+
+**Deployed at:** Vercel (GitHub integration from `bputano/leafbooks`, branch `master`). Two Neon databases: local dev (`ep-silent-term-ai22guni`) and production (`ep-polished-band-aii12a1o`). Schema must be pushed to both after changes.
 
 **Brand name:** Canopy (formerly "LeafBooks" / "Serif" in early development)
 
@@ -36,6 +38,7 @@ The product has three main surfaces:
 1. **Author Dashboard** — Title wizard, sales, readers CRM, settings
 2. **Storefront & Canopy Reader** — Book sales pages, checkout, web reader with highlights/notes/sharing
 3. **Canopy Library** — Reader accounts, personal book library, reading progress, highlights collection
+4. **Homepage** — Growth-focused marketing page organized around three levers: Sell More Books, Supercharge Word-of-Mouth, Reach New Readers
 
 ---
 
@@ -96,6 +99,14 @@ The product has three main surfaces:
 | **MagicLink** | Passwordless auth tokens (email, token, expiresAt, usedAt) |
 | **EmailSubscriber** | Email list (authorId+email unique, source) |
 
+### Bonus Material & Bundle Models (schema added, UI not yet built)
+
+| Model | Purpose |
+|---|---|
+| **BonusMaterial** | Author-level bonus resources (authorId, title, description, type: PDF/VIDEO/URL/SERVICE/COURSE/TEMPLATE/CHECKLIST/OTHER, url, fileUrl) |
+| **Bundle** | Named package of formats + bonus materials for a book (bookId, name, description, price in cents, isActive) |
+| **BundleItem** | Many-to-many link between Bundle and BookFormat or BonusMaterial (bundleId + bookFormatId unique, bundleId + bonusMaterialId unique) |
+
 ### Enums
 
 - **BookStatus**: DRAFT, PUBLISHED, ARCHIVED
@@ -105,6 +116,7 @@ The product has three main surfaces:
 - **ReaderSource**: PURCHASE, SAMPLE_REQUEST, EMAIL_SIGNUP, GIFT, REFERRAL, MANUAL
 - **ReaderStatus**: SUBSCRIBER, SAMPLE, CUSTOMER, VIP, CHURNED
 - **SubscriptionTier**: FREE, STARTER, PRO, ENTERPRISE
+- **BonusMaterialType**: PDF, VIDEO, URL, SERVICE, COURSE, TEMPLATE, CHECKLIST, OTHER
 
 ---
 
@@ -391,6 +403,9 @@ npx tsc --noEmit         # Type check
 - Per-book gift toggle in wizard
 - Reading progress tracking across sections
 - Email capture on book/author pages
+- Vercel deployment (GitHub integration, env vars, dual Neon databases)
+- Stripe Connect error handling (try-catch with meaningful error messages)
+- Sample data seeding (50 readers with orders/events via seed script)
 
 ### Not yet tested:
 - Lulu print fulfillment end-to-end (no production API keys)
@@ -404,21 +419,20 @@ npx tsc --noEmit         # Type check
 
 ## Backlog / Not Yet Built
 
-### High priority (for demo readiness)
-1. **Homepage redesign** — Current page is a placeholder. Needs features, visuals, value prop.
-2. **Sales analytics** — Revenue chart over time, per-title/per-format breakdown, units sold.
-3. **Email subscriber UI** — Authors can't see their email list. Need list view + CSV export.
-4. **Growth dashboard** — Surface gift links sent, shares, preview clicks to make "built for growth" tangible.
+### High priority
+1. **Grow tab** — Dashboard section with Email subscribers (functional), Referrals, Affiliates, Cross-Promote (placeholders). See BACKLOG.md.
+2. **Bonus Library** — Author page to manage bonus materials (PDFs, URLs, videos, services, courses). Schema ready, needs API + UI. See BACKLOG.md.
+3. **Bundles wizard step** — New step in title wizard to bundle formats + bonus materials. Schema ready, needs wizard step + sales page integration + checkout support. See BACKLOG.md.
+4. **Sales analytics** — Revenue chart over time, per-title/per-format breakdown, units sold.
 5. **Author onboarding** — Welcome state for empty dashboard, guided first-run experience.
 
 ### Medium priority (product depth)
 6. **Email marketing integrations** — Beehiiv, Kit (ConvertKit), Mailchimp sync
-7. **Bundles and premium editions** — Compose book formats + bonus materials
-8. **Discount / promo codes**
-9. **Reader referral program** — Reward readers who refer new buyers
-10. **Author cross-promotion UI** — Model exists, no UI
-11. **Payout history** — Show Stripe payouts in dashboard
-12. **Fulfillment tracking** — Show print order status from Lulu
+7. **Discount / promo codes**
+8. **Reader referral program** — Reward readers who refer new buyers
+9. **Author cross-promotion UI** — Model exists, no UI
+10. **Payout history** — Show Stripe payouts in dashboard
+11. **Fulfillment tracking** — Show print order status from Lulu
 
 ### Lower priority (future roadmap from vision doc)
 13. Affiliate program with trackable links
