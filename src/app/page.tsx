@@ -11,7 +11,12 @@ import {
   Users,
   ArrowRight,
   Package,
+  PenTool,
+  Building2,
+  Megaphone,
+  ChevronDown,
 } from "lucide-react";
+import { FAQSection } from "@/components/marketing/faq-section";
 
 export default function HomePage() {
   return (
@@ -21,6 +26,11 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <span className="font-serif text-xl font-bold text-ink">Canopy</span>
           <div className="flex items-center gap-3">
+            <Link href="/pricing">
+              <Button variant="ghost" size="sm">
+                Pricing
+              </Button>
+            </Link>
             <Link href="/login">
               <Button variant="ghost" size="sm">
                 Sign in
@@ -211,6 +221,73 @@ export default function HomePage() {
                 title="Sales analytics"
                 description="See where buyers come from, what they purchase, and how they engage with your book."
               />
+            </div>
+          </div>
+        </section>
+
+        {/* Who is Canopy for? */}
+        <section className="border-t border-ink/[0.06]">
+          <div className="mx-auto max-w-5xl px-6 py-20">
+            <h2 className="text-center font-serif text-2xl font-semibold text-ink sm:text-3xl">
+              Who is Canopy for?
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-center text-ink-light">
+              Canopy is built for anyone who wants to sell more books and own the
+              relationship with their readers.
+            </p>
+
+            <div className="mt-12 grid gap-8 sm:grid-cols-3">
+              <div className="rounded-lg bg-paper p-6 shadow-warm-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-paper text-ink-light shadow-warm-sm">
+                  <PenTool className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
+                  Self-published authors
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-light">
+                  You wrote the book and built the audience. Canopy gives you a
+                  single platform to sell direct, keep your customer data, and
+                  earn 2-5x more per book than retail channels.
+                </p>
+              </div>
+              <div className="rounded-lg bg-paper p-6 shadow-warm-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-paper text-ink-light shadow-warm-sm">
+                  <Building2 className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
+                  Hybrid publishers and authors
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-light">
+                  Manage multiple titles and authors from one place. Canopy
+                  handles production, fulfillment, and direct sales — so you can
+                  focus on editorial quality and growing your catalog.
+                </p>
+              </div>
+              <div className="rounded-lg bg-paper p-6 shadow-warm-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-paper text-ink-light shadow-warm-sm">
+                  <Megaphone className="h-5 w-5" />
+                </div>
+                <h3 className="mt-4 font-serif text-lg font-semibold text-ink">
+                  Book marketing professionals
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-light">
+                  Run campaigns with built-in affiliate links, referral
+                  programs, email capture, and sales analytics. Everything you
+                  need to drive and measure book sales in one dashboard.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section className="border-t border-ink/[0.06] bg-paper-warm">
+          <div className="mx-auto max-w-3xl px-6 py-20">
+            <h2 className="text-center font-serif text-2xl font-semibold text-ink sm:text-3xl">
+              Frequently asked questions
+            </h2>
+            <div className="mt-12">
+              <FAQSection />
             </div>
           </div>
         </section>
