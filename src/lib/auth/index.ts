@@ -52,7 +52,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
     signIn: "/login",
-    newUser: "/titles",
+    newUser: "/readers",
   },
   providers: [
     ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -72,6 +72,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const email = credentials.email as string;
         const password = credentials.password as string;
+
+        // Demo mode: allow sign-in with demo token
+        const demoUserId = process.env.DEMO_USER_ID;
+        const demoToken = process.env.DEMO_TOKEN;
+        if (demoUserId && demoToken && email === "demo" && password === demoToken) {
+          const user = await db.user.findUnique({
+            where: { id: demoUserId },
+            include: { emails: { where: { isPrimary: true }, take: 1 } },
+          });
+          if (!user) return null;
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.emails[0]?.email ?? "demo@canopy.so",
+            image: user.image,
+          };
+        }
 
         const userEmail = await db.userEmail.findUnique({
           where: { email },

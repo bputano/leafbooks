@@ -66,6 +66,11 @@ export default function PricingPage() {
             </span>
           </Link>
           <div className="flex items-center gap-3">
+            <Link href="/demo">
+              <Button variant="ghost" size="sm">
+                Try the demo
+              </Button>
+            </Link>
             <Link href="/login">
               <Button variant="ghost" size="sm">
                 Sign in
@@ -197,11 +202,16 @@ export default function PricingPage() {
               Create your free account and publish your first title today. No
               credit card required.
             </p>
-            <div className="mt-6">
+            <div className="mt-6 flex items-center justify-center gap-4">
               <Link href="/register">
                 <Button size="lg">
                   Start selling
                   <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="/demo">
+                <Button variant="outline" size="lg">
+                  Try the demo
                 </Button>
               </Link>
             </div>
