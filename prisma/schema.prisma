@@ -81,6 +81,7 @@ model Author {
   emailSubscribers EmailSubscriber[]
   crossPromotions  CrossPromotion[]
   readers          Reader[]
+  bonusMaterials   BonusMaterial[]
 }
 
 enum SubscriptionTier {
@@ -141,6 +142,7 @@ model Book {
   giftLinks       GiftLink[]
   readerEvents    ReaderEvent[]
   readingProgress ReadingProgress[]
+  bundles         Bundle[]
 
   @@unique([authorId, slug])
 }
@@ -179,10 +181,11 @@ model BookFormat {
   printingCostCents     Int?
   shippingEstimateCents Int?
 
-  book      Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  orders    Order[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  book        Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  orders      Order[]
+  bundleItems BundleItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@unique([bookId, type])
 }
@@ -453,6 +456,70 @@ model GiftLink {
   createdAt  DateTime  @default(now())
 
   @@unique([bookId, createdBy])
+}
+
+// ─── Bonus Materials & Bundles ───────────────────────────
+
+model BonusMaterial {
+  id          String            @id @default(cuid())
+  authorId    String
+  title       String
+  description String?
+  type        BonusMaterialType
+  url         String?           // external URL, or R2 file URL
+  fileUrl     String?           // uploaded file (PDF, video, etc.)
+  fileName    String?
+  order       Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  author      Author            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  bundleItems BundleItem[]
+
+  @@index([authorId])
+}
+
+enum BonusMaterialType {
+  PDF
+  VIDEO
+  URL
+  SERVICE
+  COURSE
+  TEMPLATE
+  CHECKLIST
+  OTHER
+}
+
+model Bundle {
+  id          String       @id @default(cuid())
+  bookId      String
+  name        String
+  description String?
+  price       Int          // in cents
+  currency    String       @default("USD")
+  isActive    Boolean      @default(true)
+  order       Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  book        Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  items       BundleItem[]
+
+  @@index([bookId])
+}
+
+model BundleItem {
+  id              String  @id @default(cuid())
+  bundleId        String
+  bookFormatId    String?
+  bonusMaterialId String?
+
+  bundle          Bundle         @relation(fields: [bundleId], references: [id], onDelete: Cascade)
+  bookFormat      BookFormat?    @relation(fields: [bookFormatId], references: [id], onDelete: Cascade)
+  bonusMaterial   BonusMaterial? @relation(fields: [bonusMaterialId], references: [id], onDelete: Cascade)
+
+  @@unique([bundleId, bookFormatId])
+  @@unique([bundleId, bonusMaterialId])
 }
 
 // ─── Canopy Reader Platform ─────────────────────────────

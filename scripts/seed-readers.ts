@@ -45,15 +45,17 @@ function pick<T>(arr: T[]): T {
 
 async function main() {
   const author = await db.author.findFirst({
+    where: { books: { some: { formats: { some: {} } } } },
     include: { books: { include: { formats: true } } },
   });
 
   if (!author || author.books.length === 0) {
-    console.error("No author or books found. Create a book first.");
+    console.error("No author or books found. Create a book with at least one format first.");
     process.exit(1);
   }
 
-  const book = author.books[0];
+  // Pick the book that has formats
+  const book = author.books.find(b => b.formats.length > 0) || author.books[0];
   const formats = book.formats;
 
   console.log(`Seeding readers for "${book.title}" by ${author.displayName}\n`);
