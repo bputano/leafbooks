@@ -151,46 +151,40 @@ export function ReaderLayout({
         )}
       </header>
 
-      <div className="relative">
-        {/* ToC sidebar — slides in as overlay, closes on navigate */}
-        <aside
-          className={`fixed left-0 top-[57px] z-30 h-[calc(100vh-57px)] w-72 transform border-r border-ink/[0.06] bg-paper-cool transition-transform duration-200 ${
-            tocOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          <div className="flex items-center justify-between border-b border-ink/[0.06] px-4 py-3">
-            <span className="font-serif text-sm font-medium text-ink">Contents</span>
-            <button
-              onClick={() => setTocOpen(false)}
-              className="rounded-md p-1 text-ink-muted hover:bg-paper-warm"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-          <TableOfContents
-            sections={sections}
-            currentSlug={currentSlug}
-            basePath={`/${authorSlug}/${bookSlug}/read`}
-            onNavigate={() => setTocOpen(false)}
-            isPreviewMode={isPreviewMode}
-          />
-        </aside>
-
-        {/* Overlay — click to close ToC */}
-        {tocOpen && (
+      {/* ToC sidebar — overlay, only rendered when open */}
+      {tocOpen && (
+        <>
           <div
             className="fixed inset-0 z-20 bg-ink/10"
             onClick={() => setTocOpen(false)}
           />
-        )}
+          <aside className="fixed left-0 top-[57px] z-30 h-[calc(100vh-57px)] w-72 border-r border-ink/[0.06] bg-paper-cool shadow-lg">
+            <div className="flex items-center justify-between border-b border-ink/[0.06] px-4 py-3">
+              <span className="font-serif text-sm font-medium text-ink">Contents</span>
+              <button
+                onClick={() => setTocOpen(false)}
+                className="rounded-md p-1 text-ink-muted hover:bg-paper-warm"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <TableOfContents
+              sections={sections}
+              currentSlug={currentSlug}
+              basePath={`/${authorSlug}/${bookSlug}/read`}
+              onNavigate={() => setTocOpen(false)}
+              isPreviewMode={isPreviewMode}
+            />
+          </aside>
+        </>
+      )}
 
-        {/* Main content — sacred reading space */}
-        <main
-          className={`reader-content font-serif ${FONT_SIZES[fontSize]} text-ink`}
-        >
-          {children}
-        </main>
-      </div>
+      {/* Main content — sacred reading space */}
+      <main
+        className={`reader-content font-serif ${FONT_SIZES[fontSize]} text-ink`}
+      >
+        {children}
+      </main>
     </div>
   );
 }
