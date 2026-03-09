@@ -23,6 +23,7 @@ interface Book {
   status: string;
   authorSlug: string | null;
   giftLinksEnabled: boolean;
+  globalDistributionEnabled: boolean;
   formats: Format[];
 }
 
@@ -51,8 +52,9 @@ const WIZARD_STEPS = [
   { id: 3, label: "Title Details" },
   { id: 4, label: "Set up Formats" },
   { id: 5, label: "Bundles" },
-  { id: 6, label: "Review" },
-  { id: 7, label: "Launch" },
+  { id: 6, label: "Distribution" },
+  { id: 7, label: "Review" },
+  { id: 8, label: "Launch" },
 ];
 
 export { WIZARD_STEPS };

@@ -137,6 +137,9 @@ model Book {
   // Gift control
   giftLinksEnabled  Boolean    @default(true)
 
+  // Distribution
+  globalDistributionEnabled Boolean @default(false)
+
   author          Author          @relation(fields: [authorId], references: [id], onDelete: Cascade)
   orders          Order[]
   categories      BookCategory[]

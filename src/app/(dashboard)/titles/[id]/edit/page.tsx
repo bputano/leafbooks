@@ -52,6 +52,7 @@ export default async function EditTitlePage({
     status: book.status,
     authorSlug: author.slug,
     giftLinksEnabled: book.giftLinksEnabled,
+    globalDistributionEnabled: book.globalDistributionEnabled,
     formats: book.formats.map((f) => ({
       id: f.id,
       type: f.type as "HARDCOVER" | "PAPERBACK" | "EBOOK" | "LEAF_EDITION",
