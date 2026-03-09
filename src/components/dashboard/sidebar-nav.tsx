@@ -6,6 +6,7 @@ import {
   BookOpen,
   BarChart3,
   Users,
+  Gift,
   Settings,
   CreditCard,
   LogOut,
@@ -16,6 +17,7 @@ const navItems = [
   { href: "/titles", label: "Titles", icon: BookOpen },
   { href: "/sales", label: "Sales", icon: BarChart3 },
   { href: "/readers", label: "Readers", icon: Users },
+  { href: "/bonus-library", label: "Bonus Library", icon: Gift },
   { href: "/settings", label: "Settings", icon: Settings },
   {
     href: "/settings/payments",
