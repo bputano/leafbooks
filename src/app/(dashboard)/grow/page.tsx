@@ -2,6 +2,8 @@ import { getAuthor } from "@/lib/auth/get-author";
 import { db } from "@/lib/db";
 import { Mail } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Email Subscribers — Grow — Canopy",
 };

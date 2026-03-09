@@ -2,6 +2,8 @@ import { getAuthor } from "@/lib/auth/get-author";
 import { db } from "@/lib/db";
 import { ReferralsClient } from "@/components/dashboard/grow/referrals-client";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Referrals — Grow — Canopy",
 };
