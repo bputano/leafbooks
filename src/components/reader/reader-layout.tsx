@@ -152,13 +152,13 @@ export function ReaderLayout({
       </header>
 
       <div className="relative">
-        {/* ToC sidebar — feels like a book's table of contents */}
+        {/* ToC sidebar — slides in as overlay, closes on navigate */}
         <aside
           className={`fixed left-0 top-[57px] z-30 h-[calc(100vh-57px)] w-72 transform border-r border-ink/[0.06] bg-paper-cool transition-transform duration-200 ${
             tocOpen ? "translate-x-0" : "-translate-x-full"
-          } lg:${tocOpen ? "translate-x-0" : "-translate-x-full"}`}
+          }`}
         >
-          <div className="flex items-center justify-between border-b border-ink/[0.06] px-4 py-3 lg:hidden">
+          <div className="flex items-center justify-between border-b border-ink/[0.06] px-4 py-3">
             <span className="font-serif text-sm font-medium text-ink">Contents</span>
             <button
               onClick={() => setTocOpen(false)}
@@ -176,10 +176,10 @@ export function ReaderLayout({
           />
         </aside>
 
-        {/* Overlay for mobile ToC */}
+        {/* Overlay — click to close ToC */}
         {tocOpen && (
           <div
-            className="fixed inset-0 z-20 bg-ink/10 lg:hidden"
+            className="fixed inset-0 z-20 bg-ink/10"
             onClick={() => setTocOpen(false)}
           />
         )}
