@@ -305,13 +305,16 @@ function BundleCard({
             />
             <Input
               label="Price ($)"
-              type="number"
-              step="0.01"
-              min="0"
               value={priceStr}
-              onChange={(e) => setPriceStr(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "" || /^\d*\.?\d{0,2}$/.test(v)) {
+                  setPriceStr(v);
+                }
+              }}
               onBlur={handlePriceBlur}
               placeholder="29.99"
+              inputMode="decimal"
             />
           </div>
           <div className="space-y-1">
