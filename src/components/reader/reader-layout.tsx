@@ -151,14 +151,14 @@ export function ReaderLayout({
         )}
       </header>
 
-      {/* ToC sidebar — overlay, only rendered when open */}
+      {/* ToC sidebar — overlay on top of everything, only rendered when open */}
       {tocOpen && (
         <>
           <div
-            className="fixed inset-0 z-20 bg-ink/10"
+            className="fixed inset-0 z-50 bg-ink/10"
             onClick={() => setTocOpen(false)}
           />
-          <aside className="fixed left-0 top-[57px] z-30 h-[calc(100vh-57px)] w-72 border-r border-ink/[0.06] bg-paper-cool shadow-lg">
+          <aside className="fixed left-0 top-0 z-50 flex h-full w-72 flex-col border-r border-ink/[0.06] bg-paper-cool shadow-lg">
             <div className="flex items-center justify-between border-b border-ink/[0.06] px-4 py-3">
               <span className="font-serif text-sm font-medium text-ink">Contents</span>
               <button
