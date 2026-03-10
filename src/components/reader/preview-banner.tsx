@@ -37,7 +37,7 @@ export function PreviewBanner({
             Enjoying this preview?
           </p>
           <p className="text-xs text-ink-muted truncate">
-            Get the full {bookTitle} Leaf Edition
+            Get the full {bookTitle} Canopy Edition
           </p>
         </div>
         <Link href={`/${authorSlug}/${bookSlug}`}>

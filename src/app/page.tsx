@@ -15,6 +15,7 @@ import {
   Building2,
   Megaphone,
   ChevronDown,
+  Check,
 } from "lucide-react";
 import { FAQSection } from "@/components/marketing/faq-section";
 
@@ -26,19 +27,14 @@ export default function HomePage() {
         <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
           <span className="font-serif text-xl font-bold text-ink">Canopy</span>
           <div className="flex items-center gap-3">
-            <Link href="/pricing">
-              <Button variant="ghost" size="sm">
-                Pricing
-              </Button>
-            </Link>
             <Link href="/login">
               <Button variant="ghost" size="sm">
                 Sign in
               </Button>
             </Link>
-            <Link href="/register">
-              <Button size="sm">Start selling</Button>
-            </Link>
+            <a href={process.env.NEXT_PUBLIC_WAITLIST_URL} target="_blank" rel="noopener noreferrer">
+              <Button size="sm">Join the Waitlist</Button>
+            </a>
           </div>
         </div>
       </header>
@@ -54,12 +50,12 @@ export default function HomePage() {
             keep more of what they earn.
           </p>
           <div className="mt-10 flex items-center justify-center gap-4">
-            <Link href="/register">
+            <a href={process.env.NEXT_PUBLIC_WAITLIST_URL} target="_blank" rel="noopener noreferrer">
               <Button size="lg">
-                Start selling
+                Join the Waitlist
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
-            </Link>
+            </a>
             <Link href="/demo">
               <Button variant="outline" size="lg">
                 Try the demo
@@ -280,8 +276,129 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Pricing */}
+        <section id="pricing" className="border-t border-ink/[0.06] bg-paper-warm">
+          <div className="mx-auto max-w-5xl px-6 py-20">
+            <h2 className="text-center font-serif text-2xl font-semibold text-ink sm:text-3xl">
+              Start free. Upgrade as you grow.
+            </h2>
+            <p className="mx-auto mt-4 max-w-2xl text-center text-lg leading-relaxed text-ink-light">
+              Canopy aligns its revenue with your success. You pay nothing until
+              you sell — and as you scale, you keep more of every sale.
+            </p>
+
+            <div className="mx-auto mt-12 grid max-w-3xl gap-8 lg:grid-cols-2">
+              {/* Free tier */}
+              <div className="relative rounded-xl border-2 border-ink bg-paper p-8 shadow-warm-lg">
+                <h3 className="font-serif text-2xl font-semibold text-ink">Free</h3>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className="font-serif text-4xl font-bold text-ink">$0</span>
+                  <span className="text-sm text-ink-muted">/month</span>
+                </div>
+                <p className="mt-2 inline-block rounded-md bg-paper-warm px-2 py-1 text-sm font-medium text-ink">
+                  15% royalty fee per sale
+                </p>
+                <p className="mt-1 text-xs text-ink-muted">Plus print costs and 3.5% transaction fee</p>
+                <p className="mt-4 text-sm leading-relaxed text-ink-light">
+                  Start selling with zero upfront cost. Pay only when you make a sale.
+                </p>
+                <div className="mt-6">
+                  <a href={process.env.NEXT_PUBLIC_WAITLIST_URL} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full" size="lg">
+                      Join the Waitlist
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+                </div>
+                <ul className="mt-8 space-y-3">
+                  {[
+                    "Unlimited titles",
+                    "Beautiful book pages",
+                    "Canopy Reader edition",
+                    "Print-on-demand fulfillment",
+                    "Email capture",
+                    "Sales dashboard",
+                    "Wide distribution (Amazon, bookstores)",
+                    "Customer data ownership",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2 text-sm text-ink-light">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Subscription tier */}
+              <div className="relative rounded-xl border border-ink/[0.08] bg-paper p-8 shadow-warm-sm">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ink px-3 py-1 text-xs font-medium text-paper">
+                  Coming soon
+                </div>
+                <h3 className="font-serif text-2xl font-semibold text-ink">Subscription</h3>
+                <div className="mt-4">
+                  <span className="font-serif text-2xl font-bold text-ink">Pricing TBA</span>
+                </div>
+                <p className="mt-2 inline-block rounded-md bg-paper-warm px-2 py-1 text-sm font-medium text-ink">
+                  Lower royalty fee per sale
+                </p>
+                <p className="mt-1 text-xs text-ink-muted">Plus print costs and 3.5% transaction fee</p>
+                <p className="mt-4 text-sm leading-relaxed text-ink-light">
+                  A monthly plan with a reduced royalty fee. The more you sell, the more you keep.
+                </p>
+                <div className="mt-6">
+                  <a href={process.env.NEXT_PUBLIC_WAITLIST_URL} target="_blank" rel="noopener noreferrer">
+                    <Button className="w-full" variant="outline" size="lg">
+                      Join the Waitlist
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </a>
+                </div>
+                <ul className="mt-8 space-y-3">
+                  {[
+                    "Everything in Free, plus:",
+                    "Reduced royalty fee — better unit economics",
+                    "Referral program",
+                    "Affiliate links & tracking",
+                    "Email marketing tools",
+                    "Bundle & premium edition support",
+                    "Advanced sales analytics",
+                    "Priority support",
+                  ].map((feature) => (
+                    <li key={feature} className="flex items-start gap-2 text-sm text-ink-light">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-ink" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Every plan includes */}
+            <div className="mx-auto mt-16 max-w-3xl text-center">
+              <h3 className="font-serif text-xl font-semibold text-ink">
+                Every plan includes
+              </h3>
+              <div className="mt-6 grid gap-4 text-left sm:grid-cols-2">
+                {[
+                  "Full customer data ownership",
+                  "Print-on-demand fulfillment via Lulu",
+                  "Canopy Reader web edition",
+                  "Wide distribution to Amazon & bookstores",
+                  "Stripe-powered checkout",
+                  "No upfront costs — ever",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-2">
+                    <Check className="h-4 w-4 shrink-0 text-ink" />
+                    <span className="text-sm text-ink-light">{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* FAQ */}
-        <section className="border-t border-ink/[0.06] bg-paper-warm">
+        <section className="border-t border-ink/[0.06]">
           <div className="mx-auto max-w-3xl px-6 py-20">
             <h2 className="text-center font-serif text-2xl font-semibold text-ink sm:text-3xl">
               Frequently asked questions
@@ -300,16 +417,16 @@ export default function HomePage() {
             </h2>
             <p className="mx-auto mt-4 max-w-xl text-ink-light leading-relaxed">
               Every other platform gives you a way to sell a book. Canopy gives
-              you a way to grow a readership. Create your free account and
-              publish your first title today.
+              you a way to grow a readership. Join the waitlist to be first in
+              line when we launch.
             </p>
             <div className="mt-8">
-              <Link href="/register">
+              <a href={process.env.NEXT_PUBLIC_WAITLIST_URL} target="_blank" rel="noopener noreferrer">
                 <Button size="lg">
-                  Start selling
+                  Join the Waitlist
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-              </Link>
+              </a>
             </div>
           </div>
         </section>

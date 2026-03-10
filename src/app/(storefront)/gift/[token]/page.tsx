@@ -52,7 +52,7 @@ export default function GiftRedemptionPage() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900">Gift Redeemed!</h1>
         <p className="mt-2 text-gray-600">
-          You now have access to the Leaf Edition. Start reading now.
+          You now have access to the Canopy Edition. Start reading now.
         </p>
         <div className="mt-6">
           <Button size="lg" onClick={() => router.push(readerUrl)}>
@@ -73,7 +73,7 @@ export default function GiftRedemptionPage() {
         You&apos;ve been gifted a book!
       </h1>
       <p className="mt-2 text-gray-600">
-        Enter your email to claim your free Leaf Edition access.
+        Enter your email to claim your free Canopy Edition access.
       </p>
 
       <form onSubmit={handleRedeem} className="mt-8 space-y-4">

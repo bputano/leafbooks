@@ -37,6 +37,7 @@
     "pdf-parse": "^1.1.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "recharts": "^3.8.0",
     "satori": "^0.19.2",
     "stripe": "^17.5.0",
     "tailwindcss": "^4.0.0",

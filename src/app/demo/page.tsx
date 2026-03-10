@@ -15,7 +15,7 @@ export default function DemoPage() {
     signIn("credentials", {
       email: "demo",
       password: token,
-      callbackUrl: "/readers",
+      callbackUrl: "/dashboard",
     });
   }, []);
 

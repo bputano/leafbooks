@@ -43,7 +43,7 @@ export function Paywall({
           Continue reading {bookTitle}
         </h2>
         <p className="mt-2 text-sm text-ink-light">
-          Purchase the Leaf Edition to unlock all chapters and read online.
+          Purchase the Canopy Edition to unlock all chapters and read online.
         </p>
 
         <div className="mt-6">

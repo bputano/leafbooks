@@ -21,6 +21,7 @@ export async function middleware(req: NextRequest) {
 
   // Protect all dashboard routes — redirect to login if not authenticated
   const isDashboardRoute =
+    pathname.startsWith("/dashboard") ||
     pathname.startsWith("/titles") ||
     pathname.startsWith("/sales") ||
     pathname.startsWith("/readers") ||
@@ -37,7 +38,7 @@ export async function middleware(req: NextRequest) {
   // Redirect logged-in users away from auth pages
   if (pathname === "/login" || pathname === "/register") {
     if (token) {
-      return NextResponse.redirect(new URL("/readers", req.url));
+      return NextResponse.redirect(new URL("/dashboard", req.url));
     }
   }
 
@@ -74,6 +75,7 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
+    "/dashboard/:path*",
     "/titles/:path*",
     "/sales/:path*",
     "/readers/:path*",

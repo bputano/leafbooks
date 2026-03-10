@@ -20,7 +20,7 @@ const FORMAT_OPTIONS = [
   { type: "HARDCOVER" as const, label: "Hardcover" },
   { type: "PAPERBACK" as const, label: "Paperback" },
   { type: "EBOOK" as const, label: "Ebook" },
-  { type: "LEAF_EDITION" as const, label: "Leaf Edition" },
+  { type: "LEAF_EDITION" as const, label: "Canopy Edition" },
 ];
 
 const TRIM_SIZES = [
@@ -161,7 +161,7 @@ function FormatCard({
               : format.type === "PAPERBACK"
                 ? "Paperback"
                 : format.type === "LEAF_EDITION"
-                  ? "Leaf Edition"
+                  ? "Canopy Edition"
                   : "Ebook"}
           </h3>
           {saving && <span className="text-xs text-gray-400">Saving...</span>}
@@ -373,7 +373,7 @@ function FormatCard({
           {isLeafEdition && hasManuscript && (
             <div className="rounded-lg border border-leaf-200 bg-leaf-50 p-4">
               <h4 className="mb-2 text-sm font-medium text-gray-700">
-                Preview Leaf Reader
+                Preview Canopy Reader
               </h4>
               <div className="flex items-center gap-2">
                 {processed && readerUrl && (
@@ -384,7 +384,7 @@ function FormatCard({
                     className="inline-flex items-center gap-1.5 rounded-md bg-leaf-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-leaf-700"
                   >
                     <Eye className="h-4 w-4" />
-                    Open Leaf Reader
+                    Open Canopy Reader
                   </a>
                 )}
                 <Button

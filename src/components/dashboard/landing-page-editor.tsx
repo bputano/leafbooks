@@ -38,7 +38,7 @@ const FORMAT_LABELS: Record<string, string> = {
   HARDCOVER: "Hardcover",
   PAPERBACK: "Paperback",
   EBOOK: "Ebook",
-  LEAF_EDITION: "Leaf Edition",
+  LEAF_EDITION: "Canopy Edition",
 };
 
 export function LandingPageEditor({ book }: { book: BookData }) {

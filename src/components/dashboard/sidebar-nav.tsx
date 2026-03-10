@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  LayoutDashboard,
   BookOpen,
   BarChart3,
   Users,
@@ -25,6 +26,7 @@ const DEMO_USER_ID = process.env.NEXT_PUBLIC_DEMO_USER_ID ?? "";
 const WAITLIST_URL = process.env.NEXT_PUBLIC_WAITLIST_URL ?? "#";
 
 const navItems = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/readers", label: "Readers", icon: Users },
   { href: "/titles", label: "Titles", icon: BookOpen },
   { href: "/sales", label: "Sales", icon: BarChart3 },
@@ -58,7 +60,7 @@ export function SidebarNav() {
     <>
       <div className="flex h-16 items-center justify-between border-b border-gray-200 px-6">
         <div className="flex items-center">
-          <Link href="/readers" className="text-xl font-bold text-leaf-700">
+          <Link href="/dashboard" className="text-xl font-bold text-leaf-700">
             Canopy
           </Link>
           {isDemo && (
@@ -165,7 +167,7 @@ export function SidebarNav() {
         >
           <Menu className="h-5 w-5" />
         </button>
-        <Link href="/readers" className="ml-3 text-lg font-bold text-leaf-700">
+        <Link href="/dashboard" className="ml-3 text-lg font-bold text-leaf-700">
           Canopy
         </Link>
         {isDemo && (

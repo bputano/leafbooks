@@ -1,27 +1,37 @@
 # LeafBooks Backlog
 
+## Completed
+- [x] Grow tab with sidebar sub-navigation (Email Marketing, Referrals, Affiliates, Cross-Promote)
+- [x] Bonus Library — CRUD API, dashboard page, sidebar nav
+- [x] Bundles — wizard step, API, sales page, checkout integration
+- [x] Referral Program — schema, API, dashboard, reader integration, checkout conversion, gift link tracking
+- [x] Distribution wizard step (Lulu Global Distribution)
+- [x] Email Marketing page with Engage, Campaigns, Automations, Subscribe Forms cards
+- [x] Leaf Reader upgrades — highlight sharing, heading share links, refer & gift bar, mobile sidebar fix
+
 ## Leaf Reader
+- [ ] Fix mobile sidebar — table of contents still overlapping/stuck on mobile despite DOM unmount fix
 - [ ] Add progress/status bar during content processing so users know it's working and not frozen (e.g., "Processing chapter 3 of 21...")
 
+## Homepage & Marketing
+- [ ] Add Pricing page (linked from homepage nav)
+- [ ] Add FAQ page (linked from homepage nav)
+- [ ] Add "Join Waitlist" button to homepage (email capture for early access)
+
 ## Grow Tab
-- [ ] Add "Grow" section to dashboard sidebar with 4 sub-features:
-  - Email subscribers (functional — show real data from EmailSubscriber model)
-  - Referrals (placeholder — reader referral program)
-  - Affiliates (placeholder — affiliate partnerships)
-  - Cross-Promote (placeholder — cross-author promotions, model exists)
+- [ ] Ads feature — ad campaign management, tracking, and optimization tools
+- [ ] Growth Playbooks tab — curated tools, guides, and articles to help authors grow their audience
+- [ ] Affiliates (currently placeholder — build out affiliate partnership program)
+- [ ] Cross-Promote (currently placeholder — cross-author promotions, model exists)
 
 ## Bonus Library
-- [ ] Author-level page to manage bonus materials (PDFs, URLs, videos, services, courses)
-- [ ] API routes: CRUD at /api/bonus-materials
-- [ ] Dashboard page at /bonus-library with grid + add/edit modal
-- [ ] Schema already added: BonusMaterial model with 8 types
-- [ ] File upload to R2 (deferred — URLs only for now)
+- [ ] File upload to R2 (currently URLs only)
 
-## Bundles
-- [ ] New wizard step "Bundles" between Formats and Review (renumber steps 5→7)
-- [ ] Bundle builder: name, price, select formats + bonus materials to include
-- [ ] API routes: CRUD at /api/books/[id]/bundles
-- [ ] Sales page: show bundles alongside individual formats in FormatSelector
-- [ ] Checkout integration: bundle price in PaymentIntent, bundleId in metadata
-- [ ] DB migration for existing books: UPDATE wizardStep + 1 WHERE wizardStep >= 5
-- [ ] Schema already added: Bundle, BundleItem models
+## App-Wide
+- [ ] "Suggest a Feature" button — persistent feedback widget for authors to submit feature requests
+
+## Email Marketing
+- [ ] Engage — single email blast builder and sender
+- [ ] Campaigns — multi-step email flow builder
+- [ ] Automations — triggered emails (post-purchase, abandoned cart, review request, new subscriber)
+- [ ] Subscribe Forms — embeddable form builder for Canopy pages and external sites

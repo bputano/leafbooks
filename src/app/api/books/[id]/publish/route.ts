@@ -73,7 +73,7 @@ export async function POST(
     include: { formats: true },
   });
 
-  // Trigger content pipeline if manuscript is available and has Leaf Edition format
+  // Trigger content pipeline if manuscript is available and has Canopy Edition format
   const hasLeafEdition = updated.formats.some(
     (f) => f.type === "LEAF_EDITION" && f.isActive
   );

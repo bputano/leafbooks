@@ -89,7 +89,7 @@ export function Launch({ wizard }: LaunchProps) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-sm font-medium text-leaf-600 hover:text-leaf-700"
               >
-                Open in Leaf Reader <BookOpen className="h-4 w-4" />
+                Open in Canopy Reader <BookOpen className="h-4 w-4" />
               </a>
             )}
           </div>

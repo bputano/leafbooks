@@ -73,7 +73,7 @@ export async function register(formData: FormData) {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/readers",
+      redirectTo: "/dashboard",
     });
   } catch (error) {
     if (isRedirectError(error)) throw error;
@@ -93,7 +93,7 @@ export async function loginWithCredentials(formData: FormData) {
     await signIn("credentials", {
       email,
       password,
-      redirectTo: "/readers",
+      redirectTo: "/dashboard",
     });
   } catch (error: unknown) {
     if (isRedirectError(error)) throw error;
@@ -102,5 +102,5 @@ export async function loginWithCredentials(formData: FormData) {
 }
 
 export async function loginWithGoogle(_formData: FormData) {
-  await signIn("google", { redirectTo: "/readers" });
+  await signIn("google", { redirectTo: "/dashboard" });
 }

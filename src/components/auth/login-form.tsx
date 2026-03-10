@@ -22,7 +22,7 @@ export function LoginForm() {
       }
     } catch {
       // Redirect errors are expected from NextAuth
-      router.push("/titles");
+      router.push("/dashboard");
     } finally {
       setLoading(false);
     }

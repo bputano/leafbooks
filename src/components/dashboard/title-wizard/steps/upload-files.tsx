@@ -45,7 +45,7 @@ export function UploadFiles({ wizard }: UploadFilesProps) {
               const { book: updatedBook } = await bookRes.json();
               wizard.setBookData(updatedBook);
 
-              // Auto-create Leaf Edition if not already present
+              // Auto-create Canopy Edition if not already present
               const hasLeafEdition = updatedBook.formats?.some(
                 (f: { type: string }) => f.type === "LEAF_EDITION"
               );

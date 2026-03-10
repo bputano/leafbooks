@@ -29,8 +29,8 @@ Direct-sales ecommerce platform for self-published authors.
 
 ## Terminology
 - **LeafBooks** — the platform
-- **Leaf Edition** — the web-based ereader experience for a specific book
-- **Leaf Reader** — the reader UI/technology itself
+- **Canopy Edition** — the web-based ereader experience for a specific book
+- **Canopy Reader** — the reader UI/technology itself
 
 ## Product Decisions
 
