@@ -85,7 +85,7 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Growth Lever 1: Sell More Books */}
+        {/* Growth Lever 1: Sell Direct */}
         <section className="border-t border-ink/[0.06]">
           <div className="mx-auto max-w-5xl px-6 py-20">
             <div className="flex items-center gap-2 text-sm font-medium uppercase tracking-widest text-ink-muted">
@@ -93,10 +93,10 @@ export default function HomePage() {
               Growth lever 1
             </div>
             <h2 className="mt-3 font-serif text-2xl font-semibold text-ink sm:text-3xl">
-              Sell more books to your existing audience
+              Sell direct to readers
             </h2>
             <p className="mt-3 max-w-2xl text-ink-light">
-              Convert followers into buyers — and buyers into repeat customers.
+              Own and grow your customer relationships
             </p>
 
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
