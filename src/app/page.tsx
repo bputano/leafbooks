@@ -96,7 +96,7 @@ export default function HomePage() {
               Sell direct to readers
             </h2>
             <p className="mt-3 max-w-2xl text-ink-light">
-              Own and grow your customer relationships
+              Build better, stronger customer relationships and long-term loyalty
             </p>
 
             <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
